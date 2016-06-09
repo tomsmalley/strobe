@@ -12,14 +12,18 @@ What is done
 
 - Sensing key state
 - Basic calibration routine
+- Keymap storage in EEPROM
 
 
 Still to do
 -----------
 
-- Everything else
-- Keyboard mode
-- Controller (analog) mode
+- Better layer system
+- USB HID keyboard functions
+- Analog mouse controls
+- Analog controller? (like joystick)
+- Tidy it all up
+- Nice setup method
 
 
 Setup and usage
