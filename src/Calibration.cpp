@@ -2,6 +2,7 @@
 
 #include <WProgram.h>
 
+#include "globals.h"
 #include "Key.h"
 
 void Calibration::doThis() {
@@ -14,7 +15,7 @@ void Calibration::doThat() {
 void Calibration::printValues() {
     Serial.println("Calibration values:");
     // For each key
-    for (int i = 0; i < Key::NUM_KEYS; i++) {
+    for (int i = 0; i < NUM_KEYS; i++) {
         Serial.print("Key: ");
         Serial.print(i);
         Serial.print(" Min: ");
@@ -25,7 +26,7 @@ void Calibration::printValues() {
 }
 
 void Calibration::resetValues() {
-    for (int i = 0; i < Key::NUM_KEYS; i++) {
+    for (int i = 0; i < NUM_KEYS; i++) {
         Key::setCalMin(i, 0x00);
         Key::setCalMax(i, 0xFF);
     }
@@ -37,7 +38,7 @@ void Calibration::calibrate() {
     Serial.println("Calibrating... Press and hold each key in turn for 1 second, send 'q' when done.");
 
     // Set min values to 255 and max values to 0 for comparison checking
-    for (int i = 0; i < Key::NUM_KEYS; i++) {
+    for (int i = 0; i < NUM_KEYS; i++) {
         Key::setCalMin(i, 0xFF);
         Key::setCalMax(i, 0x00);
     }
@@ -55,8 +56,8 @@ void Calibration::calibrate() {
         }
 
         // Poll each key checking for minima and maxima
-        for (int i = 0; i < Key::NUM_KEYS; i++) {
-            uint8_t value = Key::strobeRead(i);
+        for (int i = 0; i < NUM_KEYS; i++) {
+            uint8_t value = Key::strobeRead(i, controllers::row, controllers::column);
             delayMicroseconds(150);
             if (value < Key::getCalMin(i)) {
                 Key::setCalMin(i, value);

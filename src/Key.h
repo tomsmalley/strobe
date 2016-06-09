@@ -3,6 +3,9 @@
 
 #include <cstdint>
 
+class RowController;
+class ColumnController;
+
 /**
  * This class defines a keyswitch which is on a certain row and column. It
  * keeps track of state in RAM, and has accessors to EEPROM memory for row,
@@ -15,9 +18,8 @@ class Key {
 
         Key();
 
-        static const int NUM_KEYS = 128;
-
-        static uint8_t strobeRead(int8_t keyID);
+        static uint8_t strobeRead(int8_t keyID, RowController* row,
+                ColumnController* col);
         static float normalise(int8_t keyID, uint8_t val);
 
         static int8_t getRow(int8_t keyID);

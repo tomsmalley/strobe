@@ -3,7 +3,8 @@
 #include <EEPROM.h>
 #include <WProgram.h>
 
-#include "controllers.h"
+#include "RowController.h"
+#include "ColumnController.h"
 
 const int Key::EEPROM_KEY_SIZE = 9;
 const int Key::MEM_ROW_OFFSET = 0;
@@ -68,7 +69,7 @@ void Key::setMapping(int8_t keyID, uint8_t layer, uint8_t mapping) {
  * @param keyID key id number
  * @return ADC reading for row voltage
  */
-uint8_t Key::strobeRead(int8_t keyID) {
+uint8_t Key::strobeRead(int8_t keyID, RowController* row, ColumnController* col) {
     // Check the ID is positive
     if (keyID < 0) {
         return 0;
@@ -85,15 +86,15 @@ uint8_t Key::strobeRead(int8_t keyID) {
     // Interrupts can affect delayMicroseconds
     noInterrupts();
     // Select the row on multiplexer
-    controllers::row.select(rowID);
+    row->select(rowID);
     // Set column high ("strobe")
-    controllers::column.setHigh(colID);
+    col->setHigh(colID);
     // Wait for amplifier to catch up
     delayMicroseconds(3);
     // Read the row value
-    value = controllers::row.read();
+    value = row->read();
     // Set column low
-    controllers::column.setLow(colID);
+    col->setLow(colID);
     // Turn back on interrupts and wait for row to relax to 0V
     interrupts();
     return value;
