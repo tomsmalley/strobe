@@ -18,9 +18,11 @@ What is done
 Still to do
 -----------
 
-- Better layer system
+- Implement layer system
 - USB HID keyboard functions
 - Analog mouse controls
+- Refactor main loop, learn how to use interrupts
+- Implement master/slave mode and communication
 - Analog controller? (like joystick)
 - Tidy it all up
 - Nice setup method
