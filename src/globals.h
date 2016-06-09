@@ -18,6 +18,7 @@ namespace controllers {
 
 namespace state {
 
+    extern bool fnPressed;
     extern uint8_t layer;
     extern Key* keys[NUM_KEYS];
 
