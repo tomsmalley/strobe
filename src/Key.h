@@ -32,6 +32,10 @@ class Key {
         static uint8_t getCalMax(int8_t keyID);
         static void setCalMax(int8_t keyID, uint8_t value);
 
+        static uint8_t getMapping(int8_t keyID, uint8_t layer);
+
+        static void setMapping(int8_t keyID, uint8_t layer, uint8_t mapping);
+
         // Probably should make these private
         float state;
         bool pressed;
@@ -44,6 +48,7 @@ class Key {
         static const int MEM_COL_OFFSET;
         static const int MEM_CAL_MIN_OFFSET;
         static const int MEM_CAL_MAX_OFFSET;
+        static const int MEM_BASE_LAYER_OFFSET;
 
         static int getKeyAddress(int8_t keyID);
 

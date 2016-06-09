@@ -5,11 +5,12 @@
 
 #include "controllers.h"
 
-const int Key::EEPROM_KEY_SIZE = 4;
+const int Key::EEPROM_KEY_SIZE = 9;
 const int Key::MEM_ROW_OFFSET = 0;
 const int Key::MEM_COL_OFFSET = 1;
 const int Key::MEM_CAL_MIN_OFFSET = 2;
 const int Key::MEM_CAL_MAX_OFFSET = 3;
+const int Key::MEM_BASE_LAYER_OFFSET = 4;
 
 Key::Key() {
     Serial.print("create");
@@ -52,9 +53,18 @@ void Key::setCalMax(int8_t keyID, uint8_t value) {
     EEPROM.write(getKeyAddress(keyID) + MEM_CAL_MAX_OFFSET, value);
 }
 
+// Gets what the key should actually do given the current layer
+uint8_t Key::getMapping(int8_t keyID, uint8_t layer) {
+    return EEPROM.read(getKeyAddress(keyID) + MEM_BASE_LAYER_OFFSET + layer);
+}
+
+void Key::setMapping(int8_t keyID, uint8_t layer, uint8_t mapping) {
+    EEPROM.write(getKeyAddress(keyID) + MEM_BASE_LAYER_OFFSET + layer, mapping);
+}
+
 /**
- * Strobe a column and read the row voltage. Must wait 150 us
- * between function calls!
+ * Strobe a column and read the row voltage. Must wait long enough for rows to
+ * relax between function calls!
  * @param keyID key id number
  * @return ADC reading for row voltage
  */
@@ -66,6 +76,10 @@ uint8_t Key::strobeRead(int8_t keyID) {
     // Get the row and column IDs
     int8_t rowID = getRow(keyID);
     int8_t colID = getCol(keyID);
+    // Check for invalid address
+    if (rowID < 0 || colID < 0) {
+        return 0;
+    }
 
     uint8_t value;
     // Interrupts can affect delayMicroseconds
