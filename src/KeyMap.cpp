@@ -1,5 +1,7 @@
 #include "KeyMap.h"
 
+#include <WProgram.h>
+
 #include "State.h"
 
 void KeyMap::pressEvent(uint8_t mapID, State* state) {

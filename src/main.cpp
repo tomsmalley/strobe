@@ -80,6 +80,10 @@ void setup() {
     Serial.println("          "
         "              Type 'm' for the menu              ");
 
+    // Make sure the message prints fully and isn't waiting for the rest of the
+    // packet
+    Serial.send_now();
+
 }
 
 void printNormalMenu() {
@@ -150,7 +154,8 @@ void loop() {
             printNormalMenu();
         }
     }
-    // Update keyboard state
+
+    // Update keyboard state. Each loop takes less than 20 us without waiting
     for (int i = 0; i < State::NUM_KEYS; i++) {
         // Record time to make sure we wait long enough
         elapsedMicros time;
@@ -171,36 +176,37 @@ void loop() {
             state->keys[i]->depth = requestFromSlave(i);
         }
 
-        // Hysteresis for determining if key is pressed
-        // If key was pressed last iteration
-        if (state->keys[i]->pressed) {
-            // and it has dropped below threshold, set to not pressed
-            if (state->keys[i]->depth < 127) {
-                state->keys[i]->pressed = false;
-                KeyMap::releaseEvent(mapping, state);
-            }
-        // Or if it wasn't pressed
-        } else {
-            // and it has risen above threshold, set to pressed
-            if (state->keys[i]->depth > 153) {
-                state->keys[i]->pressed = true;
-                KeyMap::pressEvent(mapping, state);
+        // The rest only done on master
+        if (master) {
+            // Hysteresis for determining if key is pressed
+            // If key was pressed last iteration
+            if (state->keys[i]->pressed) {
+                // and it has dropped below threshold, set to not pressed
+                if (state->keys[i]->depth < 127) {
+                    state->keys[i]->pressed = false;
+                    KeyMap::releaseEvent(mapping, state);
+                }
+            // Or if it wasn't pressed
+            } else {
+                // and it has risen above threshold, set to pressed
+                if (state->keys[i]->depth > 153) {
+                    state->keys[i]->pressed = true;
+                    KeyMap::pressEvent(mapping, state);
+                }
             }
         }
 
-    // By this stage we should have a reasonably up to date array of keys,
-    // storing each key depth and press state->
-
-    // Parse the mapping
-    // Only consider mapped keys
-    if (mapping > 0) { // conveniently 0 is reserved in USB spec
-        // I am using it to denote no mapping
-    }
+        // Wait for 130 us
+        if (time < 130) {
+            delayMicroseconds(130 - time);
+        }
 
     }
 
-    // make this interrupt poll at 60Hz
-    Keyboard.send_now();
+    if (master) {
+        // TODO make this interrupt poll at 60Hz
+        Keyboard.send_now();
+    }
 
 }
 

@@ -13,13 +13,15 @@ What is done
 - Sensing key state
 - Basic calibration routine
 - Keymap storage in EEPROM
+- Basic layer system
+- USB keyboard 'selector' IDs now sending
 
 
 Still to do
 -----------
 
-- Implement layer system
-- USB HID keyboard functions
+- Nicer layer system
+- Full USB HID keyboard functions
 - Analog mouse controls
 - Refactor main loop, learn how to use interrupts
 - Implement master/slave mode and communication

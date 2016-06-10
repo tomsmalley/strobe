@@ -15,15 +15,14 @@ class State {
         bool fnPressed;
         uint8_t layer = 1;
         Key* keys[NUM_KEYS];
-        uint8_t* usbSelectors[6];
-        uint8_t* usbModifiers[8];
 
-        // static??
+        // static?? move to different class
         void setUSBSelector(uint8_t keyCode);
         void unsetUSBSelector(uint8_t keyCode);
         void setUSBModifier(uint8_t keyCode);
         void unsetUSBModifier(uint8_t keyCode);
         void unsetAllUSBKeys();
+        void printUSBSelectors();
 
 };
 
