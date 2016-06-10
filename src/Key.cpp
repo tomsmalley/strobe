@@ -122,6 +122,7 @@ uint8_t Key::normalise(int8_t keyID, uint8_t value) {
     // Feature scaling, scale needs to be done before int division
     // Cast is okay because the fraction must be between 0 and 1 due to
     // clamping.
-    return (uint8_t) (255 * (value - calMin))
-                   / (calMax - calMin);
+    uint16_t numerator = 255 * (value - calMin);
+    uint8_t denominator = calMax - calMin;
+    return (uint8_t) (numerator / denominator);
 }

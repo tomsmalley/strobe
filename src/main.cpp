@@ -125,13 +125,13 @@ void loop() {
     for (int i = 0; i < NUM_KEYS; i++) {
         // Record the time for later
         elapsedMicros time;
-        // this loop takes around 30 us
 
         // Only consider valid keys
         if (Key::getRow(i) >= 0 && Key::getCol(i) >= 0) {
 
-            // Measure key reading and store it
+            // Measure key reading (15 us)
             uint8_t reading = Key::strobeRead(i, controllers::row, controllers::column);
+            // Normalise key reading and store it
             uint8_t value = Key::normalise(i, reading);
             state::keys[i]->state = value;
 
@@ -151,7 +151,7 @@ void loop() {
             // If key was pressed last iteration
             if (state::keys[i]->pressed) {
                 // and it has dropped below threshold, set to not pressed
-                if (value < 0.5) {
+                if (value < 127) {
                     state::keys[i]->pressed = false;
                     // hold key fn off TODO
                     if (mapping == 0xEF) {
@@ -161,7 +161,7 @@ void loop() {
             // Or if it wasn't pressed
             } else {
                 // and it has risen above threshold, set to pressed
-                if (value > 0.6) {
+                if (value > 153) {
                     state::keys[i]->pressed = true;
                     // hold key fn
                     // this needs do be done in a seperate loop incase there
