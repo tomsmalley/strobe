@@ -2,7 +2,6 @@
 
 #include <WProgram.h>
 
-#include "globals.h"
 #include "Key.h"
 #include "State.h"
 

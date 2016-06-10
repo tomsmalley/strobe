@@ -2,7 +2,7 @@
 
 #include <WProgram.h>
 
-#include "globals.h"
+#include "controllers.h"
 #include "Key.h"
 #include "State.h"
 
