@@ -20,7 +20,7 @@ class Key {
 
         static uint8_t strobeRead(int8_t keyID, RowController* row,
                 ColumnController* col);
-        static float normalise(int8_t keyID, uint8_t val);
+        static uint8_t normalise(int8_t keyID, uint8_t val);
 
         static int8_t getRow(int8_t keyID);
         static void setRow(int8_t keyID, int8_t row);
@@ -39,7 +39,7 @@ class Key {
         static void setMapping(int8_t keyID, uint8_t layer, uint8_t mapping);
 
         // Probably should make these private
-        float state;
+        uint8_t state;
         bool pressed;
 
     private:

@@ -65,8 +65,11 @@ void Key::setMapping(int8_t keyID, uint8_t layer, uint8_t mapping) {
 
 /**
  * Strobe a column and read the row voltage. Must wait long enough for rows to
- * relax between function calls!
+ * relax between function calls! Returns 0-255 denoting row voltage (not key
+ * depth!).
  * @param keyID key id number
+ * @param row controller for the row
+ * @param col controller for the column
  * @return ADC reading for row voltage
  */
 uint8_t Key::strobeRead(int8_t keyID, RowController* row, ColumnController* col) {
@@ -101,16 +104,24 @@ uint8_t Key::strobeRead(int8_t keyID, RowController* row, ColumnController* col)
 }
 
 /**
- * Normalise a 0-255 ADC reading using calibration values (feature scaling)
+ * Normalise a 0-255 ADC reading using calibration values (feature scaling).
+ * The return value denotes keydepth from 0 (unpressed) to 255 (fully pressed).
  * @param keyID key id
  * @param value ADC reading
  * @return normalised reading
  */
-float Key::normalise(int8_t keyID, uint8_t value) {
-    float f = (value - getCalMin(keyID))
-            / (float)(getCalMax(keyID) - getCalMin(keyID));
-    // Clamp to between 0 and 1
-    if (f > 1) { f = 1; }
-    if (f < 0) { f = 0; }
-    return f;
+uint8_t Key::normalise(int8_t keyID, uint8_t value) {
+    uint16_t calMin = getCalMin(keyID);
+    uint16_t calMax = getCalMax(keyID);
+    // Clamp to max and min values
+    if (value < calMin) {
+        value = calMin;
+    } else if (value > calMax) {
+        value = calMax;
+    }
+    // Feature scaling, scale needs to be done before int division
+    // Cast is okay because the fraction must be between 0 and 1 due to
+    // clamping.
+    return (uint8_t) (255 * (value - calMin))
+                   / (calMax - calMin);
 }

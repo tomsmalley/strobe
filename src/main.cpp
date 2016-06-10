@@ -123,15 +123,29 @@ void loop() {
 
     // Measure the key states
     for (int i = 0; i < NUM_KEYS; i++) {
+        // Record the time for later
+        elapsedMicros time;
         // this loop takes around 30 us
-        //if (Key::getRow(i) >= 0 && Key::getCol(i) >= 0) {
-            // Record the time for later
-            elapsedMicros time;
+
+        // Only consider valid keys
+        if (Key::getRow(i) >= 0 && Key::getCol(i) >= 0) {
 
             // Measure key reading and store it
             uint8_t reading = Key::strobeRead(i, controllers::row, controllers::column);
-            float value = Key::normalise(i, reading);
+            uint8_t value = Key::normalise(i, reading);
             state::keys[i]->state = value;
+
+            uint8_t mapping;
+            // Get the mapping for the fn layer or current layer
+            if (state::fnPressed) {
+                mapping = Key::getMapping(i, 0);
+            } else {
+                mapping = Key::getMapping(i, state::layer);
+            }
+            // Fallback to default layer
+            if (mapping == 0) {
+                mapping = Key::getMapping(i, 1);
+            }
 
             // Hysteresis for determining if key is pressed
             // If key was pressed last iteration
@@ -139,46 +153,26 @@ void loop() {
                 // and it has dropped below threshold, set to not pressed
                 if (value < 0.5) {
                     state::keys[i]->pressed = false;
+                    // hold key fn off TODO
+                    if (mapping == 0xEF) {
+                        state::fnPressed = false;
+                    }
                 }
             // Or if it wasn't pressed
             } else {
                 // and it has risen above threshold, set to pressed
                 if (value > 0.6) {
                     state::keys[i]->pressed = true;
+                    // hold key fn
+                    // this needs do be done in a seperate loop incase there
+                    // are two function keys, pressing both and releasing only
+                    // one would unset the pressed state! TODO
+                    if (mapping == 0xEF) {
+                        state::fnPressed = true;
+                    }
                 }
             }
 
-            // Make sure we have waited 150 us before reading the next key
-            // changed to 130 us since 130 us * 128 keys * 60 Hz gives 1 second
-            if (time < 130) {
-                delayMicroseconds(130 - time);
-            }
-        //}
-    }
-
-    // Check fn key!
-    // TODO: save function key in EEPROM somewhere?
-    uint8_t layer = state::layer;
-    if (state::keys[0]->pressed) {
-        layer = 0;
-    }
-
-    // Determine what to do
-    // Maybe this loop should be merged with the measurement loop so the work
-    // can be done in the wait time TODO
-    for (int i = 0; i < NUM_KEYS; i++) {
-        // Only consider valid keys
-        if (Key::getRow(i) >= 0 // check row
-         && Key::getCol(i) >= 0 // check column
-         && i != 0 // must not be function key
-          ) {
-
-            // Get mapping for current layer
-            uint8_t mapping = Key::getMapping(i, layer);
-            // Fallback to default layer
-            if (mapping == 0) {
-                mapping = Key::getMapping(i, 1);
-            }
             // Parse the mapping
             // Only consider mapped keys
             if (mapping > 0) { // conveniently 0 is reserved in USB spec
@@ -188,37 +182,46 @@ void loop() {
                     // TODO Make function which takes USB code and captures the
                     // first 6 it is sent
                     //Keyboard.set_key1(mapping);
-                } else { // if it isn't in the usb spec it must be other function
-                    if (mapping < 0xEF) {
-                        // Layer switching
-                        // 0xE8  Layer 0 (fn layer, hold only)
-                        // 0xE9  Layer 1
-                        // 0xEA  Layer 2
-                        // 0xEB  Layer 3
-                        // 0xEC  Layer 4
-                        // 0xED  Layer 5
-                        // 0xEE  Layer 6
-                        // 0xEF  Layer 7
-                        // Maybe increment/decrement layer??
-                        layer = mapping - 0xE8;
-                    } else if (mapping >= 0xF0 && mapping <= 0xFA) {
-                        // Mouse key defs
-                        // 0xF0 Left movement
-                        // 0xF1 Down movement
-                        // 0xF2 Up movement
-                        // 0xF3 Right movement
-                        // maybe allocate 4 more for diagonals??
-                        // 0xF8 Left click
-                        // 0xF9 Middle click
-                        // 0xFA Right click
-                        // and maybe 2 for scroll ?
-                    } else if (mapping == 0xFF) {
-                        // 0xFF keyboard lock
-                    }
+                } else if (mapping > 0xE8 && mapping <= 0xEF) {
+                    // Layer switching
+                    // 0xE8  Layer 0 (fn layer, ignore here)
+                    // 0xE9  Layer 1
+                    // 0xEA  Layer 2
+                    // 0xEB  Layer 3
+                    // 0xEC  Layer 4
+                    // 0xED  Layer 5
+                    // 0xEE  Layer 6
+                    // 0xEF  Layer 7
+                    // Maybe increment/decrement layer??
+                    state::layer = mapping - 0xE8;
+                } else if (mapping >= 0xF0 && mapping <= 0xFA) {
+                    // Mouse key defs
+                    // 0xF0 Left movement
+                    // 0xF1 Down movement
+                    // 0xF2 Up movement
+                    // 0xF3 Right movement
+                    // maybe allocate 4 more for diagonals??
+                    // 0xF8 Left click
+                    // 0xF9 Middle click
+                    // 0xFA Right click
+                    // and maybe 2 for scroll ?
+                } else if (mapping == 0xFF) {
+                    // 0xFF keyboard lock
                 }
             }
 
         }
+
+        // Make sure we have waited 150 us before reading the next key
+        // changed to 130 us since 130 us * 128 keys * 60 Hz gives 1 second
+        if (time < 130) {
+            delayMicroseconds(130 - time);
+        } else {
+            Serial.print("Overrunning loop by ");
+            Serial.print(time - 130);
+            Serial.println(" us!");
+        }
+
     }
 
     // send keyboard state
