@@ -6,13 +6,6 @@
 #include "Key.h"
 #include "State.h"
 
-void Calibration::doThis() {
-    Serial.println("This");
-}
-void Calibration::doThat() {
-    Serial.println("That");
-}
-
 void Calibration::printValues() {
     Serial.println("Calibration values:");
     // For each key
