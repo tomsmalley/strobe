@@ -41,7 +41,7 @@ class Key {
         static void setMapping(int8_t keyID, uint8_t layer, uint8_t mapping);
 
         // Probably should make these private
-        uint8_t state;
+        uint8_t depth;
         bool pressed;
 
     private:

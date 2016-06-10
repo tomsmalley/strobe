@@ -4,11 +4,12 @@
 
 #include "globals.h"
 #include "Key.h"
+#include "State.h"
 
 void MatrixSetup::printValues() {
     Serial.println("Matrix rows/columns:");
     // For each key
-    for (int i = 0; i < NUM_KEYS; i++) {
+    for (int i = 0; i < State::NUM_KEYS; i++) {
         Serial.print("Key: ");
         Serial.print(i);
         Serial.print(" Row: ");
@@ -21,7 +22,7 @@ void MatrixSetup::printValues() {
 void MatrixSetup::setMatrix() {
 
     Serial.println("Setting up the matrix. Send 'q' when done.");
-    for (int i = 0; i < NUM_KEYS; i++) {
+    for (int i = 0; i < State::NUM_KEYS; i++) {
         Serial.print("Key: ");
         Serial.println(i);
         Serial.println("Send row:");
@@ -64,7 +65,7 @@ void MatrixSetup::setMatrix() {
 
 void MatrixSetup::resetValues() {
     // Reset sets to non existant column and row
-    for (int i = 0; i < NUM_KEYS; i++) {
+    for (int i = 0; i < State::NUM_KEYS; i++) {
         Key::setRow(i, -1);
         Key::setCol(i, -1);
     }

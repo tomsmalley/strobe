@@ -2,6 +2,8 @@
 
 #include "globals.h"
 #include "Key.h"
+#include "KeyMap.h"
+#include "State.h"
 
 // Escape codes for serial printing
 #define ANSI_COLOR_RED     "\x1b[31m"
@@ -27,6 +29,7 @@ boolean debugging = false;
 Calibration cal = Calibration();
 MatrixSetup mat = MatrixSetup();
 
+State* state;
 
 // current layer (0-8) (default to 1) (fn key hold gives layer 0)
 // this should never be 0, only holds user selected layers that aren't the
@@ -37,9 +40,7 @@ MatrixSetup mat = MatrixSetup();
  */
 void setup() {
 
-    for (int i = 0; i < NUM_KEYS; i++) {
-        state::keys[i] = new Key();
-    }
+    state = new State();
 
     Serial.begin(0);
 
@@ -76,14 +77,10 @@ void setup() {
     Serial.println("          "
         "          https://github.com/tomsmalley          ");
     Serial.println();
-
-    printNormalMenu();
-
-    //usb_init();
+    Serial.println("          "
+        "              Type 'm' for the menu              ");
 
 }
-
-
 
 void printNormalMenu() {
     Serial.println("-----------------------------");
@@ -93,144 +90,10 @@ void printNormalMenu() {
     Serial.println("'d' to toggle debugging");
     Serial.println("-----------------------------");
 }
-
-/**
- * Main program loop
- */
-void loop() {
-
-    // Check for serial commands
-    if (Serial.available()) {
-        char incoming = Serial.read();
-        switch (incoming) {
-            case 'c':
-                cal.start();
-                break;
-            case 'm':
-                mat.start();
-                break;
-            case 'd':
-                debugging = !debugging;
-                if (debugging) {
-                    Serial.println("Debugging on");
-                } else {
-                    Serial.println("Debugging off");
-                }
-                break;
-        }
-        //printNormalMenu();
-    }
-
-    // Measure the key states
-    for (int i = 0; i < NUM_KEYS; i++) {
-        // Record the time for later
-        elapsedMicros time;
-
-        // Only consider valid keys
-        if (Key::getRow(i) >= 0 && Key::getCol(i) >= 0) {
-
-            // Measure key reading (15 us)
-            uint8_t reading = Key::strobeRead(i, controllers::row, controllers::column);
-            // Normalise key reading and store it
-            uint8_t value = Key::normalise(i, reading);
-            state::keys[i]->state = value;
-
-            uint8_t mapping;
-            // Get the mapping for the fn layer or current layer
-            if (state::fnPressed) {
-                mapping = Key::getMapping(i, 0);
-            } else {
-                mapping = Key::getMapping(i, state::layer);
-            }
-            // Fallback to default layer
-            if (mapping == 0) {
-                mapping = Key::getMapping(i, 1);
-            }
-
-            // Hysteresis for determining if key is pressed
-            // If key was pressed last iteration
-            if (state::keys[i]->pressed) {
-                // and it has dropped below threshold, set to not pressed
-                if (value < 127) {
-                    state::keys[i]->pressed = false;
-                    // hold key fn off TODO
-                    if (mapping == 0xEF) {
-                        state::fnPressed = false;
-                    }
-                }
-            // Or if it wasn't pressed
-            } else {
-                // and it has risen above threshold, set to pressed
-                if (value > 153) {
-                    state::keys[i]->pressed = true;
-                    // hold key fn
-                    // this needs do be done in a seperate loop incase there
-                    // are two function keys, pressing both and releasing only
-                    // one would unset the pressed state! TODO
-                    if (mapping == 0xEF) {
-                        state::fnPressed = true;
-                    }
-                }
-            }
-
-            // Parse the mapping
-            // Only consider mapped keys
-            if (mapping > 0) { // conveniently 0 is reserved in USB spec
-                // I am using it to denote no mapping
-                if (mapping < 0xE8) { // this denotes something in USB spec
-                    // Just send it using teensy keyboard!
-                    // TODO Make function which takes USB code and captures the
-                    // first 6 it is sent
-                    //Keyboard.set_key1(mapping);
-                } else if (mapping > 0xE8 && mapping <= 0xEF) {
-                    // Layer switching
-                    // 0xE8  Layer 0 (fn layer, ignore here)
-                    // 0xE9  Layer 1
-                    // 0xEA  Layer 2
-                    // 0xEB  Layer 3
-                    // 0xEC  Layer 4
-                    // 0xED  Layer 5
-                    // 0xEE  Layer 6
-                    // 0xEF  Layer 7
-                    // Maybe increment/decrement layer??
-                    state::layer = mapping - 0xE8;
-                } else if (mapping >= 0xF0 && mapping <= 0xFA) {
-                    // Mouse key defs
-                    // 0xF0 Left movement
-                    // 0xF1 Down movement
-                    // 0xF2 Up movement
-                    // 0xF3 Right movement
-                    // maybe allocate 4 more for diagonals??
-                    // 0xF8 Left click
-                    // 0xF9 Middle click
-                    // 0xFA Right click
-                    // and maybe 2 for scroll ?
-                } else if (mapping == 0xFF) {
-                    // 0xFF keyboard lock
-                }
-            }
-
-        }
-
-        // Make sure we have waited 150 us before reading the next key
-        // changed to 130 us since 130 us * 128 keys * 60 Hz gives 1 second
-        if (time < 130) {
-            delayMicroseconds(130 - time);
-        } else {
-            Serial.print("Overrunning loop by ");
-            Serial.print(time - 130);
-            Serial.println(" us!");
-        }
-
-    }
-
-    // send keyboard state
-    Keyboard.send_now();
-
     /*
     //mousekeys playground
-    float valueX = state::keys[2]->state - state::keys[1]->state;
-    float valueY = state::keys[3]->state - state::keys[0]->state;
+    float valueX = state->keys[2]->state - state->keys[1]->state;
+    float valueY = state->keys[3]->state - state->keys[0]->state;
     int SENSITIVITY = 20; // max 127
     float DEADZONE = 0.05;
     float rescaleX = SENSITIVITY * (abs(valueX) - DEADZONE)
@@ -252,31 +115,92 @@ void loop() {
     Mouse.move((int)rescaleX, (int)rescaleY);
     */
 
-    // Debugging loop
-    // Turn off LED by default
-    digitalWrite(LED_PIN, LOW);
-    if (debugging) {
-        unsigned long millis();
-        for (int i = 0; i < NUM_KEYS; i++) {
-            if (Key::getRow(i) >= 0 || Key::getCol(i) >= 0) {
-                Serial.print("Key ");
-                Serial.print(i);
-                Serial.print(": ");
-                if (state::keys[i]->pressed) {
-                    Serial.print("P ");
-                    // Turn on LED if a key is pressed
-                    digitalWrite(LED_PIN, HIGH);
-                } else {
-                    Serial.print("  ");
-                }
-                Serial.print(state::keys[i]->state);
-                Serial.print(" ");
-                // Wait a little while
-                delay(1);
+uint8_t getMapping(int8_t keyID) {
+    uint8_t mapping;
+    // Get the mapping for the fn layer or current layer
+    if (state->fnPressed) {
+        mapping = Key::getMapping(keyID, 0);
+    } else {
+        mapping = Key::getMapping(keyID, state->layer);
+    }
+    // Fallback to default layer if there is no function declared
+    if (mapping == 0) {
+        mapping = Key::getMapping(keyID, 1);
+    }
+    return mapping;
+}
+
+/**
+ * TODO when 2nd teensy arrives
+ */
+uint8_t requestFromSlave(int8_t keyID) {
+    // Interrupt slave over serial1 with keyID
+    // Return slave response
+    return 0;
+}
+
+void loop() {
+    // Check if USB is connected and hence determine if master or slave
+    // TODO
+    bool master = true;
+    // If this is the master we also need to do serial interaction stuff
+    if (master && Serial.available()) {
+        if (Serial.read() == 'm') {
+            // TODO needs to actually be a menu
+            printNormalMenu();
+        }
+    }
+    // Update keyboard state
+    for (int i = 0; i < State::NUM_KEYS; i++) {
+        // Record time to make sure we wait long enough
+        elapsedMicros time;
+        // Get the mapping for this key
+        uint8_t mapping = getMapping(i);
+        // Check if the key is in this matrix
+        if (Key::isInMatrix(i)) {
+            // Read key state, normalise, and store (16 us)
+            uint8_t reading = Key::strobeRead(i, controllers::row,
+                    controllers::column);
+            state->keys[i]->depth = Key::normalise(i, reading);
+
+        } else if (master) {
+            // If the key isn't in this matrix and this is the master, we can
+            // check the slave. If no slave is connected then the reply is
+            // always 0 which denotes no press
+
+            state->keys[i]->depth = requestFromSlave(i);
+        }
+
+        // Hysteresis for determining if key is pressed
+        // If key was pressed last iteration
+        if (state->keys[i]->pressed) {
+            // and it has dropped below threshold, set to not pressed
+            if (state->keys[i]->depth < 127) {
+                state->keys[i]->pressed = false;
+                KeyMap::releaseEvent(mapping, state);
+            }
+        // Or if it wasn't pressed
+        } else {
+            // and it has risen above threshold, set to pressed
+            if (state->keys[i]->depth > 153) {
+                state->keys[i]->pressed = true;
+                KeyMap::pressEvent(mapping, state);
             }
         }
-        Serial.println();
+
+    // By this stage we should have a reasonably up to date array of keys,
+    // storing each key depth and press state->
+
+    // Parse the mapping
+    // Only consider mapped keys
+    if (mapping > 0) { // conveniently 0 is reserved in USB spec
+        // I am using it to denote no mapping
     }
+
+    }
+
+    // make this interrupt poll at 60Hz
+    Keyboard.send_now();
 
 }
 
