@@ -22,6 +22,8 @@ class Key {
                 ColumnController* col);
         static uint8_t normalise(int8_t keyID, uint8_t val);
 
+        static bool isInMatrix(int8_t keyID);
+
         static int8_t getRow(int8_t keyID);
         static void setRow(int8_t keyID, int8_t row);
 

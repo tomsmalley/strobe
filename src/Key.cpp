@@ -21,6 +21,10 @@ int Key::getKeyAddress(int8_t keyID) {
     return keyID * EEPROM_KEY_SIZE;
 }
 
+bool Key::isInMatrix(int8_t keyID) {
+    return (getRow(keyID) >= 0 && getCol(keyID) >= 0);
+}
+
 int8_t Key::getRow(int8_t keyID) {
     return EEPROM.read(getKeyAddress(keyID));
 }
