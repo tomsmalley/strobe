@@ -21,11 +21,16 @@ Still to do
 -----------
 
 - Nicer layer system
-- Full USB HID keyboard functions
-- Analog mouse controls
-- Refactor main loop, learn how to use interrupts
+- USB functions
+  - Full USB HID keyboard functions
+  - Analog mouse controls
+  - Analog controller? (like joystick)
+- Calibration
+  - Auto noise floor measurement
+  - Set hysteresis window accordingly
+  - Adjustable activation point
 - Implement master/slave mode and communication
-- Analog controller? (like joystick)
+- Refactor main loop, learn how to use interrupts
 - Tidy it all up
 - Nice setup method
 
