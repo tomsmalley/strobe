@@ -19,7 +19,6 @@ class RowController {
         uint8_t read();
 
     private:
-        void muxSelect(uint8_t s2, uint8_t s1, uint8_t s0);
         ADC* adc;
         // Row read pin, must be analog in on ADC_0
         static const int ROW_READ_PIN = A0;
