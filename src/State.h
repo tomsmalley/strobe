@@ -12,7 +12,7 @@ class State {
 
         static const int NUM_KEYS = 128;
 
-        bool fnPressed;
+        bool fnPressed = false;
         uint8_t layer = 1;
         Key* keys[NUM_KEYS];
 
@@ -23,6 +23,7 @@ class State {
         void unsetUSBModifier(uint8_t keyCode);
         void unsetAllUSBKeys();
         void printUSBSelectors();
+        void printUSBModifiers();
 
 };
 

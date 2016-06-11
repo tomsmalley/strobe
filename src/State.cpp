@@ -18,6 +18,10 @@ void State::printUSBSelectors() {
     }
     Serial.println();
 }
+void State::printUSBModifiers() {
+    Serial.print("Mods: ");
+    Serial.println(keyboard_modifier_keys);
+}
 
 void State::setUSBSelector(uint8_t keyCode) {
     // Go through selectors array, check for the keyCode
@@ -46,14 +50,27 @@ void State::unsetUSBSelector(uint8_t keyCode) {
     }
 }
 
-// Modifiers work differently - there is a space for any of them!!
-// TODO
+/**
+ * Sets the USB modifier sent in keyCode.
+ * Modifier packet is one byte with each bit denoting if a modifier is pressed.
+ * Denoting the bits in the byte packet as 76543210,
+ * Let (HEX) BIT denote the USB HID spec hex input code and the bit number
+ * respectively, the codes for each key are:
+ *        Control   Shift    Alt      GUI
+ * Left   (E0) 0    (E1) 1   (E2) 2   (E3) 3
+ * Right  (E4) 4    (E5) 5   (E6) 6   (E7) 7
+ * @param keyCode USB HID modifier key code.
+ */
 void State::setUSBModifier(uint8_t keyCode) {
-
+    keyboard_modifier_keys |= (1 << (keyCode - 0xE0));
 }
 
+/**
+ * Unsets the USB modifier sent in keyCode. See setUSBModifier for explanation.
+ * @param keyCode USB HID modifier key code.
+ */
 void State::unsetUSBModifier(uint8_t keyCode) {
-
+    keyboard_modifier_keys &= ~(1 << (keyCode - 0xE0));
 }
 
 void State::unsetAllUSBKeys() {
@@ -61,4 +78,6 @@ void State::unsetAllUSBKeys() {
     for (int i = 0; i < 6; i++) {
         keyboard_keys[i] = 0;
     }
+    // Modifiers
+    keyboard_modifier_keys = 0;
 }

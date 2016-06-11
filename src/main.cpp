@@ -84,6 +84,15 @@ void setup() {
     // packet
     Serial.send_now();
 
+
+    // DEBUGGING TEMP SETUP TODO
+    /*
+    Key::setMapping(0, 1, 0xE1);
+    Key::setMapping(1, 1, 4);
+    Key::setMapping(2, 1, 0x80);
+    Key::setMapping(3, 1, 0x81);
+    */
+
 }
 
 void printNormalMenu() {
