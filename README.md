@@ -11,10 +11,13 @@ What is done
 ------------
 
 - Sensing key state
-- Basic calibration routine
 - Keymap storage in EEPROM
 - Basic layer system (partial)
-- USB HID Keyboard functions
+- USB functions
+  - USB HID Keyboard functions
+  - Some mouse controls
+- Calibration
+  - Basic calibration routine
 
 
 Still to do
@@ -22,7 +25,7 @@ Still to do
 
 - Complete layer system
 - USB functions
-  - Analog mouse controls
+  - The rest of the mouse controls
   - Analog controller? (like joystick)
 - Calibration
   - Auto noise floor measurement

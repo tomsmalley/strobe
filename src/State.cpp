@@ -81,3 +81,58 @@ void State::unsetAllUSBKeys() {
     // Modifiers
     keyboard_modifier_keys = 0;
 }
+
+uint8_t State::mouseVel(uint8_t value) {
+    uint16_t DEADZONE = 13;
+    uint16_t SENSITIVITY = 20;
+    if (value < DEADZONE) {
+        value = DEADZONE;
+    }
+    uint16_t numerator = SENSITIVITY * (value - DEADZONE);
+    uint8_t denominator = 255 - DEADZONE;
+    return (uint8_t) (numerator / denominator);
+}
+// TODO make sure they cant overflow.
+void State::moveMouseUp(uint8_t depth) {
+    uint8_t v = mouseVel(depth);
+    if ((int)mouseY + v > 127) {
+        mouseY = 127;
+    } else {
+        mouseY += v;
+    }
+}
+void State::moveMouseRight(uint8_t depth) {
+    uint8_t v = mouseVel(depth);
+    if ((int)mouseX + v > 127) {
+        mouseX = 127;
+    } else {
+        mouseX += v;
+    }
+}
+void State::moveMouseDown(uint8_t depth) {
+    uint8_t v = mouseVel(depth);
+    if ((int)mouseY - v < -127) {
+        mouseY = -127;
+    } else {
+        mouseY -= v;
+    }
+}
+void State::moveMouseLeft(uint8_t depth) {
+    uint8_t v = mouseVel(depth);
+    if ((int)mouseX - v < -127) {
+        mouseX = -127;
+    } else {
+        mouseX -= v;
+    }
+}
+
+int8_t State::getMouseX() {
+    return mouseX;
+}
+int8_t State::getMouseY() {
+    return mouseY;
+}
+void State::resetMousePos() {
+    mouseX = 0;
+    mouseY = 0;
+}

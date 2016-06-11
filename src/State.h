@@ -25,6 +25,22 @@ class State {
         void printUSBSelectors();
         void printUSBModifiers();
 
+        //
+        void moveMouseUp(uint8_t depth);
+        void moveMouseRight(uint8_t depth);
+        void moveMouseDown(uint8_t depth);
+        void moveMouseLeft(uint8_t depth);
+
+        int8_t getMouseX();
+        int8_t getMouseY();
+        void resetMousePos();
+
+    private:
+
+        uint8_t mouseVel(uint8_t value);
+        int8_t mouseX = 0;
+        int8_t mouseY = 0;
+
 };
 
 #endif

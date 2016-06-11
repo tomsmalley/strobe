@@ -87,10 +87,10 @@ void setup() {
 
     // DEBUGGING TEMP SETUP TODO
     /*
-    Key::setMapping(0, 1, 0xE1);
-    Key::setMapping(1, 1, 4);
-    Key::setMapping(2, 1, 0x80);
-    Key::setMapping(3, 1, 0x81);
+    Key::setMapping(0, 1, 0xA8);
+    Key::setMapping(1, 1, 0xAB);
+    Key::setMapping(2, 1, 0xA6);
+    Key::setMapping(3, 1, 0xA9);
     */
 
 }
@@ -125,7 +125,6 @@ void printNormalMenu() {
     if (valueY < 0) {
         rescaleY = -rescaleY;
     }
-    Mouse.move((int)rescaleX, (int)rescaleY);
     */
 
 uint8_t getMapping(int8_t keyID) {
@@ -168,25 +167,29 @@ void loop() {
     for (int i = 0; i < State::NUM_KEYS; i++) {
         // Record time to make sure we wait long enough
         elapsedMicros time;
+
         // Get the mapping for this key
         uint8_t mapping = getMapping(i);
-        // Check if the key is in this matrix
+
+        // Read (or attempt to get) the key depth
         if (Key::isInMatrix(i)) {
             // Read key state, normalise, and store (16 us)
             uint8_t reading = Key::strobeRead(i, controllers::row,
                     controllers::column);
             state->keys[i]->depth = Key::normalise(i, reading);
-
         } else if (master) {
             // If the key isn't in this matrix and this is the master, we can
             // check the slave. If no slave is connected then the reply is
             // always 0 which denotes no press
-
             state->keys[i]->depth = requestFromSlave(i);
         }
 
         // The rest only done on master
         if (master) {
+
+            // Analog handler
+            KeyMap::handle(mapping, state->keys[i]->depth, state);
+
             // Hysteresis for determining if key is pressed
             // If key was pressed last iteration
             if (state->keys[i]->pressed) {
@@ -203,6 +206,7 @@ void loop() {
                     KeyMap::pressEvent(mapping, state);
                 }
             }
+
         }
 
         // Wait for 130 us
@@ -215,6 +219,8 @@ void loop() {
     if (master) {
         // TODO make this interrupt poll at 60Hz
         Keyboard.send_now();
+        Mouse.move(state->getMouseX(), state->getMouseY());
+        state->resetMousePos();
     }
 
 }
