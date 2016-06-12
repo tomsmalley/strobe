@@ -95,10 +95,10 @@ uint8_t State::mouseVel(uint8_t value) {
 // TODO make sure they cant overflow.
 void State::moveMouseUp(uint8_t depth) {
     uint8_t v = mouseVel(depth);
-    if ((int)mouseY + v > 127) {
-        mouseY = 127;
+    if ((int)mouseY - v < -127) {
+        mouseY = -127;
     } else {
-        mouseY += v;
+        mouseY -= v;
     }
 }
 void State::moveMouseRight(uint8_t depth) {
@@ -111,10 +111,10 @@ void State::moveMouseRight(uint8_t depth) {
 }
 void State::moveMouseDown(uint8_t depth) {
     uint8_t v = mouseVel(depth);
-    if ((int)mouseY - v < -127) {
-        mouseY = -127;
+    if ((int)mouseY + v > 127) {
+        mouseY = 127;
     } else {
-        mouseY -= v;
+        mouseY += v;
     }
 }
 void State::moveMouseLeft(uint8_t depth) {
