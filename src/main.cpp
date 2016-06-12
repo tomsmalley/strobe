@@ -2,6 +2,7 @@
 
 #include "controllers.h"
 #include "Key.h"
+#include "Persist.h"
 #include "KeyMap.h"
 #include "State.h"
 
@@ -86,11 +87,16 @@ void setup() {
 
 
     // DEBUGGING TEMP SETUP TODO
+    Persist::setMatrixPosition(0, 0, 0);
+    Persist::setMatrixPosition(1, 0, 1);
+    Persist::setMatrixPosition(2, 0, 2);
+    Persist::setMatrixPosition(3, 0, 3);
+
     /*
-    Key::setMapping(0, 1, 0xA8);
-    Key::setMapping(1, 1, 0xAB);
-    Key::setMapping(2, 1, 0xA6);
-    Key::setMapping(3, 1, 0xA9);
+    Key::setMapping(0, 1, 0xA5);
+    Key::setMapping(1, 1, 0xA7);
+    Key::setMapping(2, 1, 0xAA);
+    Key::setMapping(3, 1, 0xAC);
     */
 
 }
@@ -131,13 +137,13 @@ uint8_t getMapping(int8_t keyID) {
     uint8_t mapping;
     // Get the mapping for the fn layer or current layer
     if (state->fnPressed) {
-        mapping = Key::getMapping(keyID, 0);
+        mapping = Persist::getMapping(keyID, 0);
     } else {
-        mapping = Key::getMapping(keyID, state->layer);
+        mapping = Persist::getMapping(keyID, state->layer);
     }
     // Fallback to default layer if there is no function declared
     if (mapping == 0) {
-        mapping = Key::getMapping(keyID, 1);
+        mapping = Persist::getMapping(keyID, 1);
     }
     return mapping;
 }
@@ -172,7 +178,7 @@ void loop() {
         uint8_t mapping = getMapping(i);
 
         // Read (or attempt to get) the key depth
-        if (Key::isInMatrix(i)) {
+        if (Persist::keyIsInMatrix(i)) {
             // Read key state, normalise, and store (16 us)
             uint8_t reading = Key::strobeRead(i, controllers::row,
                     controllers::column);

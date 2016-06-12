@@ -3,6 +3,7 @@
 #include "WProgram.h"
 
 #include "Key.h"
+#include "Persist.h"
 
 State::State() {
     for (int i = 0; i < NUM_KEYS; i++) {
@@ -83,8 +84,8 @@ void State::unsetAllUSBKeys() {
 }
 
 uint8_t State::mouseVel(uint8_t value) {
-    uint16_t DEADZONE = 13;
-    uint16_t SENSITIVITY = 20;
+    const uint16_t DEADZONE = Persist::getDeadZone();
+    const uint16_t SENSITIVITY = Persist::getSensitivity();
     if (value < DEADZONE) {
         value = DEADZONE;
     }
@@ -92,6 +93,7 @@ uint8_t State::mouseVel(uint8_t value) {
     uint8_t denominator = 255 - DEADZONE;
     return (uint8_t) (numerator / denominator);
 }
+
 // TODO make sure they cant overflow.
 void State::moveMouseUp(uint8_t depth) {
     uint8_t v = mouseVel(depth);

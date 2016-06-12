@@ -2,7 +2,7 @@
 
 #include <WProgram.h>
 
-#include "Key.h"
+#include "Persist.h"
 #include "State.h"
 
 void MatrixSetup::printValues() {
@@ -12,9 +12,9 @@ void MatrixSetup::printValues() {
         Serial.print("Key: ");
         Serial.print(i);
         Serial.print(" Row: ");
-        Serial.print(Key::getRow(i));
+        Serial.print(Persist::getRow(i));
         Serial.print(" Col: ");
-        Serial.println(Key::getCol(i));
+        Serial.println(Persist::getCol(i));
     }
 }
 
@@ -26,6 +26,7 @@ void MatrixSetup::setMatrix() {
         Serial.println(i);
         Serial.println("Send row:");
         bool rowSet = false;
+        uint8_t row;
         while (!rowSet) {
             if (Serial.available()) {
                 char incoming = Serial.read();
@@ -33,7 +34,7 @@ void MatrixSetup::setMatrix() {
                     return;
                 }
                 if (incoming >= '0' && incoming <= '7') {
-                    Key::setRow(i, incoming - 48);
+                    row = incoming - 48;
                     rowSet = true;
                 } else {
                     Serial.println("Not a recognised row");
@@ -42,6 +43,7 @@ void MatrixSetup::setMatrix() {
         }
         Serial.println("Send column:");
         bool colSet = false;
+        uint8_t col;
         while (!colSet) {
             if (Serial.available()) {
                 char incoming = Serial.read();
@@ -49,24 +51,24 @@ void MatrixSetup::setMatrix() {
                     return;
                 }
                 if (incoming >= '0' && incoming <= '9') {
-                    Key::setCol(i, incoming - 48);
+                    col = incoming - 48;
                     colSet = true;
                 } else if (incoming >= 'A' && incoming <= 'F') {
-                    Key::setCol(i, incoming - 55);
+                    col = incoming - 55;
                     colSet = true;
                 } else {
                     Serial.println("Not a recognised column");
                 }
             }
         }
+        Persist::setMatrixPosition(i, row, col);
     }
 }
 
 void MatrixSetup::resetValues() {
     // Reset sets to non existant column and row
     for (int i = 0; i < State::NUM_KEYS; i++) {
-        Key::setRow(i, -1);
-        Key::setCol(i, -1);
+        Persist::setMatrixPosition(i, 0, 0);
     }
     Serial.println("Memory reset.");
 }

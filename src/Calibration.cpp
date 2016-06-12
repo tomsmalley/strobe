@@ -3,6 +3,7 @@
 #include <WProgram.h>
 
 #include "controllers.h"
+#include "Persist.h"
 #include "Key.h"
 #include "State.h"
 
@@ -13,16 +14,16 @@ void Calibration::printValues() {
         Serial.print("Key: ");
         Serial.print(i);
         Serial.print(" Min: ");
-        Serial.print(Key::getCalMin(i));
+        Serial.print(Persist::getCalMin(i));
         Serial.print(" Max: ");
-        Serial.println(Key::getCalMax(i));
+        Serial.println(Persist::getCalMax(i));
     }
 }
 
 void Calibration::resetValues() {
     for (int i = 0; i < State::NUM_KEYS; i++) {
-        Key::setCalMin(i, 0x00);
-        Key::setCalMax(i, 0xFF);
+        Persist::setCalMin(i, 0x00);
+        Persist::setCalMax(i, 0xFF);
     }
     Serial.println("Memory reset.");
 }
@@ -33,8 +34,8 @@ void Calibration::calibrate() {
 
     // Set min values to 255 and max values to 0 for comparison checking
     for (int i = 0; i < State::NUM_KEYS; i++) {
-        Key::setCalMin(i, 0xFF);
-        Key::setCalMax(i, 0x00);
+        Persist::setCalMin(i, 0xFF);
+        Persist::setCalMax(i, 0x00);
     }
 
     while (true) {
@@ -53,11 +54,11 @@ void Calibration::calibrate() {
         for (int i = 0; i < State::NUM_KEYS; i++) {
             uint8_t value = Key::strobeRead(i, controllers::row, controllers::column);
             delayMicroseconds(150);
-            if (value < Key::getCalMin(i)) {
-                Key::setCalMin(i, value);
+            if (value < Persist::getCalMin(i)) {
+                Persist::setCalMin(i, value);
             }
-            if (value > Key::getCalMax(i)) {
-                Key::setCalMax(i, value);
+            if (value > Persist::getCalMax(i)) {
+                Persist::setCalMax(i, value);
             }
         }
     }
