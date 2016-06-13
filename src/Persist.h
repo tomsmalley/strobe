@@ -107,6 +107,12 @@ class Persist {
         static uint8_t getSensitivity();
         static void setSensitivity(uint8_t sensitivity);
 
+        static uint8_t getMinThreshold();
+        static void setMinThreshold(uint8_t threshold);
+
+        static uint8_t getMaxThreshold();
+        static void setMaxThreshold(uint8_t threshold);
+
     private:
 
         // Helper functions for input sanitization
@@ -124,6 +130,8 @@ class Persist {
         // User settings memory offsets
         static const int MEM_SETTINGS_DEADZONE_OFFSET = 0;
         static const int MEM_SETTINGS_SENSITIVITY_OFFSET = 1;
+        static const int MEM_SETTINGS_MIN_THRESHOLD_OFFSET = 2;
+        static const int MEM_SETTINGS_MAX_THRESHOLD_OFFSET = 3;
 
 };
 

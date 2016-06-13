@@ -36,6 +36,26 @@ void Persist::setSensitivity(uint8_t sensitivity) {
             MEM_SETTINGS_SENSITIVITY_OFFSET, sensitivity);
 }
 
+uint8_t Persist::getMinThreshold() {
+    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
+            MEM_SETTINGS_MIN_THRESHOLD_OFFSET);
+}
+
+void Persist::setMinThreshold(uint8_t threshold) {
+    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
+            MEM_SETTINGS_MIN_THRESHOLD_OFFSET, threshold);
+}
+
+uint8_t Persist::getMaxThreshold() {
+    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
+            MEM_SETTINGS_MAX_THRESHOLD_OFFSET);
+}
+
+void Persist::setMaxThreshold(uint8_t threshold) {
+    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
+            MEM_SETTINGS_MAX_THRESHOLD_OFFSET, threshold);
+}
+
 /* MATRIX POSITION (ROW AND COLUMN) FUNCTIONS */
 
 bool Persist::keyIsInMatrix(uint8_t keyID) {

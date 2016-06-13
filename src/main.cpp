@@ -87,10 +87,14 @@ void setup() {
 
 
     // DEBUGGING TEMP SETUP TODO
+    /*
     Persist::setMatrixPosition(0, 0, 0);
     Persist::setMatrixPosition(1, 0, 1);
     Persist::setMatrixPosition(2, 0, 2);
     Persist::setMatrixPosition(3, 0, 3);
+    */
+    Persist::setMinThreshold(127);
+    Persist::setMaxThreshold(153);
 
     /*
     Key::setMapping(0, 1, 0xA5);
@@ -200,14 +204,14 @@ void loop() {
             // If key was pressed last iteration
             if (state->keys[i]->pressed) {
                 // and it has dropped below threshold, set to not pressed
-                if (state->keys[i]->depth < 127) {
+                if (state->keys[i]->depth < Persist::getMinThreshold()) {
                     state->keys[i]->pressed = false;
                     KeyMap::releaseEvent(mapping, state);
                 }
             // Or if it wasn't pressed
             } else {
                 // and it has risen above threshold, set to pressed
-                if (state->keys[i]->depth > 153) {
+                if (state->keys[i]->depth > Persist::getMaxThreshold()) {
                     state->keys[i]->pressed = true;
                     KeyMap::pressEvent(mapping, state);
                 }

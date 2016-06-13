@@ -31,6 +31,7 @@ Still to do
   - Auto noise floor measurement
   - Set hysteresis window accordingly
   - Adjustable activation point
+- On the fly macro recording
 - Implement master/slave mode and communication
 - Refactor main loop, learn how to use interrupts
 - Tidy it all up
