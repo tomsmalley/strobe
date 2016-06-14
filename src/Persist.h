@@ -120,6 +120,9 @@ class Persist {
         static uint8_t getMaxThreshold();
         static void setMaxThreshold(uint8_t threshold);
 
+        static uint8_t getNoiseFloor();
+        static void setNoiseFloor(uint8_t noise);
+
     private:
 
         // Helper functions for input sanitization
@@ -139,6 +142,7 @@ class Persist {
         static const int MEM_SETTINGS_SENSITIVITY_OFFSET = 1;
         static const int MEM_SETTINGS_MIN_THRESHOLD_OFFSET = 2;
         static const int MEM_SETTINGS_MAX_THRESHOLD_OFFSET = 3;
+        static const int MEM_SETTINGS_NOISE_FLOOR_OFFSET = 4;
 
 };
 

@@ -56,6 +56,16 @@ void Persist::setMaxThreshold(uint8_t threshold) {
             MEM_SETTINGS_MAX_THRESHOLD_OFFSET, threshold);
 }
 
+uint8_t Persist::getNoiseFloor() {
+    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
+            MEM_SETTINGS_NOISE_FLOOR_OFFSET);
+}
+
+void Persist::setNoiseFloor(uint8_t noise) {
+    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
+            MEM_SETTINGS_NOISE_FLOOR_OFFSET, noise);
+}
+
 /* MATRIX POSITION (ROW AND COLUMN) FUNCTIONS */
 
 bool Persist::keyIsInMatrix(uint8_t keyID) {

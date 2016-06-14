@@ -11,9 +11,10 @@ class Calibration: public SerialMenu {
 
     private:
 
-        static const int ARRAY_SIZE = 3;
+        static const int ARRAY_SIZE = 4;
         static const SerialMenuFunction FUNCTIONS[ARRAY_SIZE];
 
+        static void determineNoiseFloor();
         static void calibrate();
         static void printValues();
         static void resetValues();
