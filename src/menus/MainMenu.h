@@ -5,8 +5,9 @@
 
 #include "SerialMenu.h"
 
-#include "Calibration.h"
 #include "MatrixSetup.h"
+#include "Calibration.h"
+#include "KeyMapSetup.h"
 
 class MainMenu: public SerialMenu {
 
@@ -16,14 +17,16 @@ class MainMenu: public SerialMenu {
 
     private:
 
-        static const int ARRAY_SIZE = 2;
+        static const int ARRAY_SIZE = 3;
         static const SerialMenuFunction FUNCTIONS[ARRAY_SIZE];
 
-        static Calibration calibrationMenu;
         static MatrixSetup matrixSetupMenu;
+        static Calibration calibrationMenu;
+        static KeyMapSetup keyMapSetupMenu;
 
-        static void calibration();
         static void matrixSetup();
+        static void calibration();
+        static void keyMapSetup();
 
 };
 

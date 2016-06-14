@@ -74,6 +74,8 @@ void setup() {
     // Settings
     Persist::setMinThreshold(127);
     Persist::setMaxThreshold(153);
+    Persist::setSensitivity(20);
+    Persist::setDeadZone(10);
 
     // Mappings
     Persist::setMapping(0, 1, 0xA5);
