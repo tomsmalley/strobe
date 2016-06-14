@@ -15,6 +15,7 @@ const SerialMenuFunction MatrixSetup::FUNCTIONS[ARRAY_SIZE] =
     };
 
 void MatrixSetup::printValues() {
+    Serial.println();
     Serial.println("Matrix rows/columns:");
     // For each key
     for (int i = 0; i < State::NUM_KEYS; i++) {
@@ -31,6 +32,7 @@ void MatrixSetup::printValues() {
 }
 
 void MatrixSetup::setMatrix() {
+    Serial.println();
     Serial.println("Setting up the matrix. Send 'q' when done.");
     for (int i = 0; i < State::NUM_KEYS; i++) {
         Serial.print("Key: ");

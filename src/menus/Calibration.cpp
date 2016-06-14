@@ -12,8 +12,6 @@ const SerialMenuFunction Calibration::FUNCTIONS[ARRAY_SIZE] =
             &Calibration::determineNoiseFloor)
     , SerialMenuFunction('c', "Calibrate keys",
             &Calibration::calibrate)
-    , SerialMenuFunction('r', "Reset calibration data",
-            &Calibration::resetValues)
     , SerialMenuFunction('p', "Print calibration data",
             &Calibration::printValues)
     };
@@ -41,14 +39,6 @@ void Calibration::printValues() {
             Serial.println(snr);
         }
     }
-}
-
-void Calibration::resetValues() {
-    for (int i = 0; i < State::NUM_KEYS; i++) {
-        Persist::setCalMin(i, 0x00);
-        Persist::setCalMax(i, 0xFF);
-    }
-    Serial.println("Memory reset.");
 }
 
 // Determines the maximum peak to peak noise
@@ -123,6 +113,7 @@ void Calibration::determineNoiseFloor() {
 // (pressed/unpressed)
 void Calibration::calibrate() {
 
+    Serial.println();
     Serial.println("Calibrating... Press and hold each key in turn for 1"
             " second, send 'q' when done.");
 
@@ -170,18 +161,9 @@ void Calibration::calibrate() {
 
             Persist::setCalMin(i, min);
             Persist::setCalMax(i, max);
-
-            Serial.print("Key: ");
-            Serial.print(i);
-            Serial.print(" Min/Max: ");
-            Serial.print(min);
-            Serial.print("/");
-            Serial.print(max);
-            Serial.print(" *** Absolute measurements (min/max): ");
-            Serial.print(minValue[i]);
-            Serial.print("/");
-            Serial.println(maxValue[i]);
         }
     }
+
+    printValues();
 
 }
