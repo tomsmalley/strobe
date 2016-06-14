@@ -35,6 +35,7 @@ void KeyMapSetup::printValues() {
     // For each key
 }
 
+// TODO this function is lazily implemented, needs rewriting
 void KeyMapSetup::setKeyMap() {
     Serial.println();
     Serial.println("Setting up the matrix. Send 'q' when done.");

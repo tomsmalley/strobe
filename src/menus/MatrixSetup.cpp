@@ -16,19 +16,22 @@ const SerialMenuFunction MatrixSetup::FUNCTIONS[ARRAY_SIZE] =
 
 void MatrixSetup::printValues() {
     Serial.println();
-    Serial.println("Matrix rows/columns:");
+    Serial.println("+-----+-----+-----+");
+    Serial.println("| Key | Row | Col |");
+    Serial.println("+-----+-----+-----+");
     // For each key
     for (int i = 0; i < State::NUM_KEYS; i++) {
         // Only show ones set in this matrix
         if (Persist::keyIsInMatrix(i)) {
-            Serial.print("Key: ");
-            Serial.print(i, HEX);
-            Serial.print(" Row: ");
-            Serial.print(Persist::getRow(i), HEX);
-            Serial.print(" Col: ");
-            Serial.println(Persist::getCol(i), HEX);
+            Serial.printf( "| %-3u | %02X  | %02X |"
+                         , i
+                         , Persist::getRow(i)
+                         , Persist::getCol(i)
+                         );
+            Serial.println();
         }
     }
+    Serial.println("+-----+-----+-----+");
 }
 
 void MatrixSetup::setMatrix() {
