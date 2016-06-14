@@ -7,6 +7,15 @@
 #include "Key.h"
 #include "State.h"
 
+const SerialMenuFunction Calibration::FUNCTIONS[ARRAY_SIZE] =
+    { SerialMenuFunction('c', "Calibrate keys",
+            &Calibration::calibrate)
+    , SerialMenuFunction('r', "Reset calibration data",
+            &Calibration::resetValues)
+    , SerialMenuFunction('p', "Print calibration data",
+            &Calibration::printValues)
+    };
+
 void Calibration::printValues() {
     Serial.println("Calibration values:");
     // For each key

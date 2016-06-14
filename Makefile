@@ -12,7 +12,7 @@ TEENSY_CORE_SPEED = 96000000
 #ARDUINO = 10600
 
 # configurable options
-OPTIONS = -DUSB_SERIAL_HID -DLAYOUT_US_ENGLISH
+OPTIONS = -DUSB_SERIAL_HID -DLAYOUT_US_ENGLISH -Isrc/menus
 
 # directory to build in
 BUILDDIR = $(abspath $(CURDIR)/build)
@@ -103,8 +103,8 @@ LC_FILES := $(wildcard $(LIBRARYPATH)/*/*.c)
 LCPP_FILES := $(wildcard $(LIBRARYPATH)/*/*.cpp)
 TC_FILES := $(wildcard $(COREPATH)/*.c)
 TCPP_FILES := $(wildcard $(COREPATH)/*.cpp)
-C_FILES := $(wildcard src/*.c)
-CPP_FILES := $(wildcard src/*.cpp)
+C_FILES := $(shell find src/ -name '*.c')
+CPP_FILES := $(shell find src/ -name '*.cpp')
 INO_FILES := $(wildcard src/*.ino)
 
 # include paths for libraries

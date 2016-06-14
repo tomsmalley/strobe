@@ -5,6 +5,15 @@
 #include "Persist.h"
 #include "State.h"
 
+const SerialMenuFunction MatrixSetup::FUNCTIONS[ARRAY_SIZE] =
+    { SerialMenuFunction('s', "Setup new matrix",
+            &MatrixSetup::setMatrix)
+    , SerialMenuFunction('r', "Reset matrix data",
+            &MatrixSetup::resetValues)
+    , SerialMenuFunction('p', "Print matrix data",
+            &MatrixSetup::printValues)
+    };
+
 void MatrixSetup::printValues() {
     Serial.println("Matrix rows/columns:");
     // For each key

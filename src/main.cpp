@@ -24,11 +24,9 @@ const int LED_PIN = 13;
 boolean debugging = false;
 
 // this whole file is a mess for now
-#include "Calibration.h"
-#include "MatrixSetup.h"
 
-Calibration cal = Calibration();
-MatrixSetup mat = MatrixSetup();
+#include "MainMenu.h"
+MainMenu* menu;
 
 State* state;
 
@@ -47,6 +45,15 @@ void setup() {
 
     pinMode(LED_PIN, OUTPUT);
 
+    // Flash LED to show it is working
+    for (int i = 0; i < 10; i++) {
+        digitalWrite(LED_PIN, HIGH);
+        delay(100);
+        digitalWrite(LED_PIN, LOW);
+        delay(100);
+    }
+
+    menu = new MainMenu();
 
     // Flash LED to show it is working
     for (int i = 0; i < 10; i++) {
@@ -93,8 +100,10 @@ void setup() {
     Persist::setMatrixPosition(2, 0, 2);
     Persist::setMatrixPosition(3, 0, 3);
     */
+    /*
     Persist::setMinThreshold(127);
     Persist::setMaxThreshold(153);
+    */
 
     /*
     Key::setMapping(0, 1, 0xA5);
@@ -169,7 +178,7 @@ void loop() {
     if (master && Serial.available()) {
         if (Serial.read() == 'm') {
             // TODO needs to actually be a menu
-            printNormalMenu();
+            menu->start();
         }
     }
 
