@@ -130,12 +130,12 @@ class Persist {
         static uint8_t maskLayer(uint8_t maskLayer);
 
         // Memory locations
-        static const int BLOCK_SIZE = 128; // In bytes
-        static const int MEM_USER_SETTINGS_BLOCK = 0x0;
-        static const int MEM_KEY_MATRIX_BLOCK = 0x1;
-        static const int MEM_KEY_CAL_MIN_BLOCK = 0x2;
-        static const int MEM_KEY_CAL_MAX_BLOCK = 0x3;
-        static const int MEM_KEYMAP_START_BLOCK = 0x4;
+        static const int BLOCK_SIZE = 0x80; // In bytes
+        static const int MEM_USER_SETTINGS = 0x0 * BLOCK_SIZE;
+        static const int MEM_KEY_MATRIX    = 0x1 * BLOCK_SIZE;
+        static const int MEM_KEY_CAL_MIN   = 0x2 * BLOCK_SIZE;
+        static const int MEM_KEY_CAL_MAX   = 0x3 * BLOCK_SIZE;
+        static const int MEM_KEYMAPS       = 0x4 * BLOCK_SIZE;
 
         // User settings memory offsets
         static const int MEM_SETTINGS_DEADZONE_OFFSET = 0;

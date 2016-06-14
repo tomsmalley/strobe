@@ -17,67 +17,58 @@ uint8_t Persist::maskLayer(uint8_t layer) {
 /* USER SETTINGS */
 
 uint8_t Persist::getDeadZone() {
-    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_DEADZONE_OFFSET);
+    return EEPROM.read(MEM_USER_SETTINGS + MEM_SETTINGS_DEADZONE_OFFSET);
 }
 
 void Persist::setDeadZone(uint8_t deadZone) {
-    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_DEADZONE_OFFSET, deadZone);
+    EEPROM.update(MEM_USER_SETTINGS + MEM_SETTINGS_DEADZONE_OFFSET, deadZone);
 }
 
 uint8_t Persist::getSensitivity() {
-    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_SENSITIVITY_OFFSET);
+    return EEPROM.read(MEM_USER_SETTINGS + MEM_SETTINGS_SENSITIVITY_OFFSET);
 }
 
 void Persist::setSensitivity(uint8_t sensitivity) {
-    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_SENSITIVITY_OFFSET, sensitivity);
+    EEPROM.update(MEM_USER_SETTINGS + MEM_SETTINGS_SENSITIVITY_OFFSET,
+            sensitivity);
 }
 
 uint8_t Persist::getMinThreshold() {
-    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_MIN_THRESHOLD_OFFSET);
+    return EEPROM.read(MEM_USER_SETTINGS + MEM_SETTINGS_MIN_THRESHOLD_OFFSET);
 }
 
 void Persist::setMinThreshold(uint8_t threshold) {
-    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_MIN_THRESHOLD_OFFSET, threshold);
+    EEPROM.update(MEM_USER_SETTINGS + MEM_SETTINGS_MIN_THRESHOLD_OFFSET,
+            threshold);
 }
 
 uint8_t Persist::getMaxThreshold() {
-    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_MAX_THRESHOLD_OFFSET);
+    return EEPROM.read(MEM_USER_SETTINGS + MEM_SETTINGS_MAX_THRESHOLD_OFFSET);
 }
 
 void Persist::setMaxThreshold(uint8_t threshold) {
-    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_MAX_THRESHOLD_OFFSET, threshold);
+    EEPROM.update(MEM_USER_SETTINGS + MEM_SETTINGS_MAX_THRESHOLD_OFFSET,
+            threshold);
 }
 
 uint8_t Persist::getNoiseFloor() {
-    return EEPROM.read(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_NOISE_FLOOR_OFFSET);
+    return EEPROM.read(MEM_USER_SETTINGS + MEM_SETTINGS_NOISE_FLOOR_OFFSET);
 }
 
 void Persist::setNoiseFloor(uint8_t noise) {
-    EEPROM.update(BLOCK_SIZE * MEM_USER_SETTINGS_BLOCK +
-            MEM_SETTINGS_NOISE_FLOOR_OFFSET, noise);
+    EEPROM.update(MEM_USER_SETTINGS + MEM_SETTINGS_NOISE_FLOOR_OFFSET, noise);
 }
 
 /* MATRIX POSITION (ROW AND COLUMN) FUNCTIONS */
 
 bool Persist::keyIsInMatrix(uint8_t keyID) {
-    uint8_t matrix = EEPROM.read(BLOCK_SIZE * MEM_KEY_MATRIX_BLOCK +
-            maskKeyID(keyID));
+    uint8_t matrix = EEPROM.read(MEM_KEY_MATRIX + maskKeyID(keyID));
     // Get the bit
     return (matrix >> 7);
 }
 
 void Persist::setKeyNotInMatrix(uint8_t keyID) {
-    EEPROM.update(BLOCK_SIZE * MEM_KEY_MATRIX_BLOCK + maskKeyID(keyID),
-            0);
+    EEPROM.update(MEM_KEY_MATRIX + maskKeyID(keyID), 0);
 }
 
 // Row bits (RRR) and column (CCCC) are stored in a single byte: 1RRR CCCC
@@ -91,21 +82,18 @@ void Persist::setMatrixPosition(uint8_t keyID, uint8_t row, uint8_t col) {
     matrixPosition |= (row & rowMask) << 4;
     // Set column bits
     matrixPosition |= col & colMask;
-    EEPROM.update(BLOCK_SIZE * MEM_KEY_MATRIX_BLOCK + maskKeyID(keyID),
-            matrixPosition);
+    EEPROM.update(MEM_KEY_MATRIX + maskKeyID(keyID), matrixPosition);
 }
 
 uint8_t Persist::getRow(uint8_t keyID) {
-    uint8_t matrix = EEPROM.read(BLOCK_SIZE * MEM_KEY_MATRIX_BLOCK +
-            maskKeyID(keyID));
+    uint8_t matrix = EEPROM.read(MEM_KEY_MATRIX + maskKeyID(keyID));
     // Shift the three row bits and mask them
     uint8_t mask = 0x07;
     return (matrix >> 4) & mask;
 }
 
 uint8_t Persist::getCol(uint8_t keyID) {
-    uint8_t matrix = EEPROM.read(BLOCK_SIZE * MEM_KEY_MATRIX_BLOCK +
-            maskKeyID(keyID));
+    uint8_t matrix = EEPROM.read(MEM_KEY_MATRIX + maskKeyID(keyID));
     // Mask off the four column bits
     uint8_t mask = 0x0F;
     return matrix & mask;
@@ -114,31 +102,29 @@ uint8_t Persist::getCol(uint8_t keyID) {
 /* CALIBRATION FUNCTIONS */
 
 uint8_t Persist::getCalMin(uint8_t keyID) {
-    return EEPROM.read(BLOCK_SIZE * MEM_KEY_CAL_MIN_BLOCK + maskKeyID(keyID));
+    return EEPROM.read(MEM_KEY_CAL_MIN + maskKeyID(keyID));
 }
 
 void Persist::setCalMin(uint8_t keyID, uint8_t value) {
-    EEPROM.update(BLOCK_SIZE * MEM_KEY_CAL_MIN_BLOCK + maskKeyID(keyID),
-            value);
+    EEPROM.update(MEM_KEY_CAL_MIN + maskKeyID(keyID), value);
 }
 
 uint8_t Persist::getCalMax(uint8_t keyID) {
-    return EEPROM.read(BLOCK_SIZE * MEM_KEY_CAL_MAX_BLOCK + maskKeyID(keyID));
+    return EEPROM.read(MEM_KEY_CAL_MAX + maskKeyID(keyID));
 }
 
 void Persist::setCalMax(uint8_t keyID, uint8_t value) {
-    EEPROM.update(BLOCK_SIZE * MEM_KEY_CAL_MAX_BLOCK + maskKeyID(keyID),
-            value);
+    EEPROM.update(MEM_KEY_CAL_MAX + maskKeyID(keyID), value);
 }
 
 /* KEYMAP FUNCTIONS */
 
 uint8_t Persist::getMapping(uint8_t keyID, uint8_t layer) {
-    return EEPROM.read(BLOCK_SIZE * MEM_KEYMAP_START_BLOCK * maskLayer(layer) +
+    return EEPROM.read(MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
             maskKeyID(keyID));
 }
 
 void Persist::setMapping(uint8_t keyID, uint8_t layer, uint8_t mapID) {
-    EEPROM.update(BLOCK_SIZE * MEM_KEYMAP_START_BLOCK * maskLayer(layer) +
+    EEPROM.update(MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
             maskKeyID(keyID), mapID);
 }
