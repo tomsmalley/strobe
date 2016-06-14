@@ -23,7 +23,7 @@ void MatrixSetup::printValues() {
     for (int i = 0; i < State::NUM_KEYS; i++) {
         // Only show ones set in this matrix
         if (Persist::keyIsInMatrix(i)) {
-            Serial.printf( "| %-3u | %02X  | %02X |"
+            Serial.printf( "| %3u |  %01X  |  %01X  |"
                          , i
                          , Persist::getRow(i)
                          , Persist::getCol(i)

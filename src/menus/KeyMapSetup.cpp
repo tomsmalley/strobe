@@ -23,7 +23,7 @@ void KeyMapSetup::printValues() {
     for (int i = 0; i < State::NUM_KEYS; i++) {
         // Only show ones set in this matrix
         if (Persist::keyIsInMatrix(i)) {
-            Serial.printf("| %-3u |", i);
+            Serial.printf("| %3u |", i);
             // Go through layers
             for (int layer = 0; layer < 8; layer++) {
                 Serial.printf(" %02X |", Persist::getMapping(i, layer));
@@ -46,7 +46,7 @@ void KeyMapSetup::setKeyMap() {
 
     for (int i = 0; i < State::NUM_KEYS; i++) {
         // Print key
-        Serial.printf("| %-3u |", i);
+        Serial.printf("| %3u |", i);
         // Layers
         for (int l = 0; l < 8; l++) {
             // Print current mapping

@@ -23,22 +23,26 @@ void Calibration::printValues() {
     Serial.print("Noise floor: ");
     Serial.println(noise);
     Serial.println("Per-key data:");
+    Serial.println("+-----+-----+-----+-----+");
+    Serial.println("| Key | Min | Max | SNR |");
+    Serial.println("+-----+-----+-----+-----+");
     // For each key
     for (int i = 0; i < State::NUM_KEYS; i++) {
+        // Only show ones set in this matrix
         if (Persist::keyIsInMatrix(i)) {
             uint8_t min = Persist::getCalMin(i);
             uint8_t max = Persist::getCalMax(i);
             uint8_t snr = (max - min)/noise;
-            Serial.print("Key: ");
-            Serial.print(i);
-            Serial.print(" Min: ");
-            Serial.print(min);
-            Serial.print(" Max: ");
-            Serial.print(max);
-            Serial.print(" *** Signal/noise ratio: ");
-            Serial.println(snr);
+            Serial.printf( "| %3u | %3u | %3u | %3u |"
+                         , i
+                         , min
+                         , max
+                         , snr
+                         );
+            Serial.println();
         }
     }
+    Serial.println("+-----+-----+-----+-----+");
 }
 
 // Determines the maximum peak to peak noise
@@ -86,24 +90,29 @@ void Calibration::determineNoiseFloor() {
     Serial.println(" measurements on each key.");
 
     uint8_t maxNoise = 0;
+    Serial.println("+-----+-------+-----+-----+");
+    Serial.println("| Key | Noise | Min | Max |");
+    Serial.println("+-----+-------+-----+-----+");
+    // For each key
     for (int i = 0; i < State::NUM_KEYS; i++) {
+        // Only show ones set in this matrix
         if (Persist::keyIsInMatrix(i)) {
             uint8_t noise = maxValue[i] - minValue[i];
             // Find the max
             if (noise > maxNoise) {
                 maxNoise = noise;
             }
-            // Print the measurements
-            Serial.print("Key: ");
-            Serial.print(i);
-            Serial.print(" Noise: ");
-            Serial.print(noise);
-            Serial.print(" *** Measured (min/max): ");
-            Serial.print(minValue[i]);
-            Serial.print("/");
-            Serial.println(maxValue[i]);
+            Serial.printf( "| %3u | %3u | %3u | %3u |"
+                         , i
+                         , noise
+                         , minValue[i]
+                         , maxValue[i]
+                         );
+            Serial.println();
         }
     }
+    Serial.println("+-----+-------+-----+-----+");
+
     Serial.println("Saving maximum value to memory...");
     Persist::setNoiseFloor(maxNoise);
 
