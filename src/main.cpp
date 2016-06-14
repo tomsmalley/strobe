@@ -15,24 +15,11 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-
-void printNormalMenu();
-void loop();
-
 const int LED_PIN = 13;
-
-boolean debugging = false;
-
-// this whole file is a mess for now
 
 #include "MainMenu.h"
 MainMenu* menu;
-
 State* state;
-
-// current layer (0-8) (default to 1) (fn key hold gives layer 0)
-// this should never be 0, only holds user selected layers that aren't the
-// function layer (layer 0)
 
 /**
  * Setup function
@@ -40,20 +27,11 @@ State* state;
 void setup() {
 
     state = new State();
+    menu = new MainMenu();
 
     Serial.begin(0);
 
     pinMode(LED_PIN, OUTPUT);
-
-    // Flash LED to show it is working
-    for (int i = 0; i < 10; i++) {
-        digitalWrite(LED_PIN, HIGH);
-        delay(100);
-        digitalWrite(LED_PIN, LOW);
-        delay(100);
-    }
-
-    menu = new MainMenu();
 
     // Flash LED to show it is working
     for (int i = 0; i < 10; i++) {
@@ -92,59 +70,18 @@ void setup() {
     // packet
     Serial.send_now();
 
-
     // DEBUGGING TEMP SETUP TODO
-    /*
-    Persist::setMatrixPosition(0, 0, 0);
-    Persist::setMatrixPosition(1, 0, 1);
-    Persist::setMatrixPosition(2, 0, 2);
-    Persist::setMatrixPosition(3, 0, 3);
-    */
-    /*
+    // Settings
     Persist::setMinThreshold(127);
     Persist::setMaxThreshold(153);
-    */
 
-    /*
-    Key::setMapping(0, 1, 0xA5);
-    Key::setMapping(1, 1, 0xA7);
-    Key::setMapping(2, 1, 0xAA);
-    Key::setMapping(3, 1, 0xAC);
-    */
+    // Mappings
+    Persist::setMapping(0, 1, 0xA5);
+    Persist::setMapping(1, 1, 0xA7);
+    Persist::setMapping(2, 1, 0xAA);
+    Persist::setMapping(3, 1, 0xAC);
 
 }
-
-void printNormalMenu() {
-    Serial.println("-----------------------------");
-    Serial.println("Normal mode. Send:");
-    Serial.println("'c' to enter calibration mode");
-    Serial.println("'m' to enter matrix setup mode");
-    Serial.println("'d' to toggle debugging");
-    Serial.println("-----------------------------");
-}
-    /*
-    //mousekeys playground
-    float valueX = state->keys[2]->state - state->keys[1]->state;
-    float valueY = state->keys[3]->state - state->keys[0]->state;
-    int SENSITIVITY = 20; // max 127
-    float DEADZONE = 0.05;
-    float rescaleX = SENSITIVITY * (abs(valueX) - DEADZONE)
-                    / (float)(1 - DEADZONE);
-    float rescaleY = SENSITIVITY * (abs(valueY) - DEADZONE)
-                    / (float)(1 - DEADZONE);
-    if (rescaleX < 0) {
-        rescaleX = 0;
-    }
-    if (rescaleY < 0) {
-        rescaleY = 0;
-    }
-    if (valueX < 0) {
-        rescaleX = -rescaleX;
-    }
-    if (valueY < 0) {
-        rescaleY = -rescaleY;
-    }
-    */
 
 uint8_t getMapping(int8_t keyID) {
     uint8_t mapping;

@@ -20,12 +20,14 @@ void Calibration::printValues() {
     Serial.println("Calibration values:");
     // For each key
     for (int i = 0; i < State::NUM_KEYS; i++) {
-        Serial.print("Key: ");
-        Serial.print(i);
-        Serial.print(" Min: ");
-        Serial.print(Persist::getCalMin(i));
-        Serial.print(" Max: ");
-        Serial.println(Persist::getCalMax(i));
+        if (Persist::keyIsInMatrix(i)) {
+            Serial.print("Key: ");
+            Serial.print(i);
+            Serial.print(" Min: ");
+            Serial.print(Persist::getCalMin(i));
+            Serial.print(" Max: ");
+            Serial.println(Persist::getCalMax(i));
+        }
     }
 }
 

@@ -25,6 +25,14 @@ class SerialMenu {
          */
         void start();
 
+    protected:
+
+        /**
+         * Just waits for a character to be sent to serial input.
+         * @return command from serial
+         */
+        static char getSerialCommand();
+
     private:
 
         // Menu name

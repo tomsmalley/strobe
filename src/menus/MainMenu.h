@@ -12,7 +12,7 @@ class MainMenu: public SerialMenu {
 
     public:
 
-        MainMenu(): SerialMenu ("Main menu.", FUNCTIONS, ARRAY_SIZE) {}
+        MainMenu(): SerialMenu ("Main menu", FUNCTIONS, ARRAY_SIZE) {}
 
     private:
 

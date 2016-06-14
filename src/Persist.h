@@ -36,6 +36,13 @@ class Persist {
         static bool keyIsInMatrix(uint8_t keyID);
 
         /**
+         * Check if a key is in this matrix.
+         * @param keyID key ID
+         * @return true if the key is in the matrix
+         */
+        static void setKeyNotInMatrix(uint8_t keyID);
+
+        /**
          * Get the row index of a given key.
          * @param keyID key ID
          * @return row index

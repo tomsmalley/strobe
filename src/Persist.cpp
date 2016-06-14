@@ -65,6 +65,11 @@ bool Persist::keyIsInMatrix(uint8_t keyID) {
     return (matrix >> 7);
 }
 
+void Persist::setKeyNotInMatrix(uint8_t keyID) {
+    EEPROM.update(BLOCK_SIZE * MEM_KEY_MATRIX_BLOCK + maskKeyID(keyID),
+            0);
+}
+
 // Row bits (RRR) and column (CCCC) are stored in a single byte: 1RRR CCCC
 void Persist::setMatrixPosition(uint8_t keyID, uint8_t row, uint8_t col) {
     uint8_t rowMask = 0x07;

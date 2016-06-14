@@ -1,9 +1,9 @@
 #include "MainMenu.h"
 
 const SerialMenuFunction MainMenu::FUNCTIONS[ARRAY_SIZE] =
-                { SerialMenuFunction('c', "Calibration mode",
+                { SerialMenuFunction('c', "Calibration",
                         &MainMenu::calibration)
-                , SerialMenuFunction('m', "Matrix setup mode",
+                , SerialMenuFunction('m', "Matrix setup",
                         &MainMenu::matrixSetup)
                 };
 
