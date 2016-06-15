@@ -15,8 +15,6 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-const int LED_PIN = 13;
-
 #include "MainMenu.h"
 MainMenu* menu;
 State* state;
@@ -31,13 +29,11 @@ void setup() {
 
     Serial.begin(0);
 
-    pinMode(LED_PIN, OUTPUT);
-
     // Flash LED to show it is working
     for (int i = 0; i < 10; i++) {
-        digitalWrite(LED_PIN, HIGH);
+        controller->turnOnLED();
         delay(100);
-        digitalWrite(LED_PIN, LOW);
+        controller->turnOffLED();
         delay(100);
     }
 

@@ -2,11 +2,8 @@
 
 #include "ADC.h"
 
-const HardwareController* hardwareController = new HardwareController();
+/*** Setup all the pins and ADC in constructor ***/
 
-/**
- * Setup all the pins and ADC
- */
 HardwareController::HardwareController() {
 
     // LED pin
@@ -32,10 +29,8 @@ HardwareController::HardwareController() {
 
 }
 
-/**
- * Select a row on the multiplexer (integer row number).
- * @param row row number
- */
+/*** Row functions ***/
+
 void HardwareController::selectRow(uint8_t row) const {
     // Get binary representation using bitwise operations
     digitalWrite(PIN_MUX_CONTROL[0], (row) & 1);
@@ -47,6 +42,8 @@ uint8_t HardwareController::readRow() const {
     return adc->analogRead(PIN_ROW_READ, ADC_0);
 }
 
+/*** Col functions ***/
+
 void HardwareController::setColHigh(uint8_t col) const {
     digitalWrite(PIN_COL[col], HIGH);
 }
@@ -54,3 +51,17 @@ void HardwareController::setColHigh(uint8_t col) const {
 void HardwareController::setColLow(uint8_t col) const {
     digitalWrite(PIN_COL[col], LOW);
 }
+
+/*** LED functions ***/
+
+void HardwareController::turnOnLED() const {
+    digitalWrite(PIN_LED, HIGH);
+}
+
+void HardwareController::turnOffLED() const {
+    digitalWrite(PIN_LED, LOW);
+}
+
+// Global definition
+const HardwareController* controller = new HardwareController();
+

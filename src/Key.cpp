@@ -26,15 +26,15 @@ uint8_t Key::strobeRead(int8_t keyID) {
     // Interrupts can affect delayMicroseconds
     noInterrupts();
     // Select the row on multiplexer
-    hardwareController->selectRow(row);
+    controller->selectRow(row);
     // Set column high ("strobe")
-    hardwareController->setColHigh(col);
+    controller->setColHigh(col);
     // Wait for amplifier to catch up
     delayMicroseconds(3);
     // Read the row value
-    value = hardwareController->readRow();
+    value = controller->readRow();
     // Set column low
-    hardwareController->setColLow(col);
+    controller->setColLow(col);
     // Turn back on interrupts and wait for row to relax to 0V
     interrupts();
     return value;
