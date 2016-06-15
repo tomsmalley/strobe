@@ -2,7 +2,8 @@
 
 #include <WProgram.h>
 
-#include "controllers.h"
+#include "HardwareController.h"
+
 #include "Persist.h"
 #include "Key.h"
 #include "State.h"
@@ -67,8 +68,7 @@ void Calibration::determineNoiseFloor() {
         // Read key states
         for (int i = 0; i < State::NUM_KEYS; i++) {
             if (Persist::keyIsInMatrix(i)) {
-                uint8_t value = Key::strobeRead(i, controllers::row,
-                        controllers::column);
+                uint8_t value = Key::strobeRead(i);
                 delayMicroseconds(150);
                 // Update min and max values
                 if (value < minValue[i]) {
@@ -148,8 +148,7 @@ void Calibration::calibrate() {
         // Poll each key checking for minima and maxima
         for (int i = 0; i < State::NUM_KEYS; i++) {
             if (Persist::keyIsInMatrix(i)) {
-                uint8_t value = Key::strobeRead(i, controllers::row,
-                        controllers::column);
+                uint8_t value = Key::strobeRead(i);
                 delayMicroseconds(150);
                 // Update min and max values
                 if (value < minValue[i]) {

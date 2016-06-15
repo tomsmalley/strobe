@@ -3,23 +3,22 @@
 #include <WProgram.h>
 
 #include "Persist.h"
-#include "RowController.h"
-#include "ColumnController.h"
+#include "HardwareController.h"
 
 Key::Key() {
     Serial.print("create");
 }
 
-uint8_t Key::strobeRead(int8_t keyID, RowController* row, ColumnController* col) {
+uint8_t Key::strobeRead(int8_t keyID) {
     // Check the ID is positive
     if (keyID < 0) {
         return 0;
     }
     // Get the row and column IDs
-    int8_t rowID = Persist::getRow(keyID);
-    int8_t colID = Persist::getCol(keyID);
+    int8_t row = Persist::getRow(keyID);
+    int8_t col = Persist::getCol(keyID);
     // Check for invalid address
-    if (rowID < 0 || colID < 0) {
+    if (row < 0 || col < 0) {
         return 0;
     }
 
@@ -27,15 +26,15 @@ uint8_t Key::strobeRead(int8_t keyID, RowController* row, ColumnController* col)
     // Interrupts can affect delayMicroseconds
     noInterrupts();
     // Select the row on multiplexer
-    row->select(rowID);
+    hardwareController->selectRow(row);
     // Set column high ("strobe")
-    col->setHigh(colID);
+    hardwareController->setColHigh(col);
     // Wait for amplifier to catch up
     delayMicroseconds(3);
     // Read the row value
-    value = row->read();
+    value = hardwareController->readRow();
     // Set column low
-    col->setLow(colID);
+    hardwareController->setColLow(col);
     // Turn back on interrupts and wait for row to relax to 0V
     interrupts();
     return value;

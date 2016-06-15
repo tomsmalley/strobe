@@ -17,6 +17,7 @@ What is done
   - USB HID Keyboard functions
   - Some mouse controls
 - Calibration
+  - Noise floor measurement
   - Basic calibration routine
 
 
@@ -28,7 +29,6 @@ Still to do
   - The rest of the mouse controls
   - Analog controller? (like joystick)
 - Calibration
-  - Auto noise floor measurement
   - Set hysteresis window accordingly
   - Adjustable activation point
 - On the fly macro recording

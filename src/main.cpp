@@ -1,6 +1,6 @@
 #include <WProgram.h>
 
-#include "controllers.h"
+#include "HardwareController.h"
 #include "Key.h"
 #include "Persist.h"
 #include "KeyMap.h"
@@ -132,8 +132,7 @@ void loop() {
         // Read (or attempt to get) the key depth
         if (Persist::keyIsInMatrix(i)) {
             // Read key state, normalise, and store (16 us)
-            uint8_t reading = Key::strobeRead(i, controllers::row,
-                    controllers::column);
+            uint8_t reading = Key::strobeRead(i);
             state->keys[i]->depth = Key::normalise(i, reading);
         } else if (master) {
             // If the key isn't in this matrix and this is the master, we can
