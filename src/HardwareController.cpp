@@ -29,18 +29,48 @@ HardwareController::HardwareController() {
 
 }
 
-/*** Row functions ***/
+
+/*** Reading functions ***/
+
+uint8_t HardwareController::strobeRead(uint8_t col) {
+    uint8_t value;
+    // Make sure we have waited enough time
+    if (timeSinceLastStrobe < ROW_RELAX_TIME) {
+        delayMicroseconds(ROW_RELAX_TIME - timeSinceLastStrobe);
+    }
+
+    // Time sensitive part - interrupts can affect delayMicroseconds
+    noInterrupts();
+    // Set column high ("strobe")
+    controller->setColHigh(col);
+    // Wait for amplifier to catch up
+    delayMicroseconds(3);
+    // Read the row value
+    value = controller->readRow();
+    // Set column low
+    controller->setColLow(col);
+    // Turn back on interrupts and wait for row to relax to 0V
+    interrupts();
+
+    timeSinceLastStrobe = elapsedMicros();
+    return value;
+}
 
 void HardwareController::selectRow(uint8_t row) const {
     // Get binary representation using bitwise operations
     digitalWrite(PIN_MUX_CONTROL[0], (row) & 1);
     digitalWrite(PIN_MUX_CONTROL[1], (row >> 1) & 1);
     digitalWrite(PIN_MUX_CONTROL[2], (row >> 2) & 1);
+    delayMicroseconds(ROW_RELAX_TIME);
 }
+
+
+/*** Row functions ***/
 
 uint8_t HardwareController::readRow() const {
     return adc->analogRead(PIN_ROW_READ, ADC_0);
 }
+
 
 /*** Col functions ***/
 
@@ -52,6 +82,7 @@ void HardwareController::setColLow(uint8_t col) const {
     digitalWrite(PIN_COL[col], LOW);
 }
 
+
 /*** LED functions ***/
 
 void HardwareController::turnOnLED() const {
@@ -62,6 +93,6 @@ void HardwareController::turnOffLED() const {
     digitalWrite(PIN_LED, LOW);
 }
 
-// Global definition
-const HardwareController* controller = new HardwareController();
 
+// Global definition
+HardwareController* controller = new HardwareController();

@@ -9,37 +9,6 @@ Key::Key() {
     Serial.print("create");
 }
 
-uint8_t Key::strobeRead(int8_t keyID) {
-    // Check the ID is positive
-    if (keyID < 0) {
-        return 0;
-    }
-    // Get the row and column IDs
-    int8_t row = Persist::getRow(keyID);
-    int8_t col = Persist::getCol(keyID);
-    // Check for invalid address
-    if (row < 0 || col < 0) {
-        return 0;
-    }
-
-    uint8_t value;
-    // Interrupts can affect delayMicroseconds
-    noInterrupts();
-    // Select the row on multiplexer
-    controller->selectRow(row);
-    // Set column high ("strobe")
-    controller->setColHigh(col);
-    // Wait for amplifier to catch up
-    delayMicroseconds(3);
-    // Read the row value
-    value = controller->readRow();
-    // Set column low
-    controller->setColLow(col);
-    // Turn back on interrupts and wait for row to relax to 0V
-    interrupts();
-    return value;
-}
-
 uint8_t Key::normalise(int8_t keyID, uint8_t value) {
     uint16_t calMin = Persist::getCalMin(keyID);
     uint16_t calMax = Persist::getCalMax(keyID);

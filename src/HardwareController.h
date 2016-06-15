@@ -20,12 +20,22 @@ class HardwareController {
          */
         HardwareController();
 
-        /*** Matrix ***/
 
-        static const uint8_t NUM_COLS = 16;
-        static const uint8_t NUM_ROWS = 8; // 7051 spec
+        // Used for loops
+        const uint8_t NUM_COLS = 16;
+        const uint8_t NUM_ROWS = 8; // 7051 spec
 
-        /*** Row functions ***/
+
+        /*** Reading functions ***/
+
+        /**
+         * Strobe a column and read the (preselected) row voltage.
+         * Must wait long enough for rows to relax between function calls!
+         * Returns 0-255 denoting row voltage (not key depth!).
+         * @param col column number
+         * @return ADC reading for row voltage
+         */
+        uint8_t strobeRead(uint8_t col);
 
         /**
          * Select a row on the multiplexer.
@@ -33,11 +43,22 @@ class HardwareController {
          */
         void selectRow(uint8_t row) const;
 
+
+        /*** LED functions ***/
+
+        void turnOnLED() const;
+        void turnOffLED() const;
+
+    private:
+
+        /*** Row functions ***/
+
         /**
          * Read the selected row with the ADC.
          * @return ADC reading (0-255)
          */
         uint8_t readRow() const;
+
 
         /*** Col functions ***/
 
@@ -53,23 +74,12 @@ class HardwareController {
          */
         void setColLow(uint8_t col) const;
 
-        /*** LED functions ***/
 
-        /**
-         * Turn on LED.
-         */
-        void turnOnLED() const;
-
-        /**
-         * Turn off LED.
-         */
-        void turnOffLED() const;
-
-    private:
-
-        /*** ADC object, initialised in constructor ***/
-
+        // ADC object, setup in constructor
         ADC* adc;
+
+        // Time since last read, reset every strobeRead
+        elapsedMicros timeSinceLastStrobe;
 
         /*** Pin definitions, must be unique, init in constructor ***/
 
@@ -85,10 +95,13 @@ class HardwareController {
         , 18, 19, 20, 21
         };
 
+        // How long it takes the matrix to relax fully in microseconds
+        const uint8_t ROW_RELAX_TIME = 130;
+
 
 };
 
 // Global object
-extern const HardwareController* controller;
+extern HardwareController* controller;
 
 #endif

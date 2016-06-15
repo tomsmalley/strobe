@@ -29,35 +29,6 @@ void setup() {
         delay(100);
     }
 
-    // Print fancy intro
-    Serial.println(ANSI_COLOR_RESET);
-    Serial.println("          _   _   _        "
-        ANSI_COLOR_CYAN "  _       " ANSI_COLOR_RESET
-        "                     _");
-    Serial.println("     __ _| |_| |_| |_  ___ "
-        ANSI_COLOR_CYAN " (_)__ __ " ANSI_COLOR_RESET
-        " __ _ _ _ __ __ _ __| |___ ");
-    Serial.println("    / _` |  _|  _| ' \\/ -_)"
-        ANSI_COLOR_CYAN "/ / _/ -_)" ANSI_COLOR_RESET
-        "/ _` | '_/ _/ _` / _` / -_)");
-    Serial.println("    \\__,_|\\__|\\__|_||_\\__/"
-        ANSI_COLOR_CYAN "/_/\\__/\\_/ " ANSI_COLOR_RESET
-        "\\__,_|_| \\__\\__,_\\__,_\\___|");
-    Serial.println(ANSI_COLOR_RESET);
-    Serial.println("          "
-        "      Capacitive sensing keyboard firmware");
-    Serial.println("          "
-        "        --------------------------------     ");
-    Serial.println("          "
-        "          https://github.com/tomsmalley          ");
-    Serial.println();
-    Serial.println("          "
-        "              Type 'm' for the menu              ");
-
-    // Make sure the message prints fully and isn't waiting for the rest of the
-    // packet
-    Serial.send_now();
-
     // DEBUGGING TEMP SETUP TODO
     // Settings
     /*
@@ -104,33 +75,63 @@ void loop() {
     // TODO
     bool master = true;
     // If this is the master we also need to do serial interaction stuff
+    if (Serial.dtr()) {
+        // Print fancy intro
+        Serial.println(ANSI_COLOR_RED);
+        Serial.println("       __           __      ");
+        Serial.println("  ___ / /________  / /  ___ ");
+        Serial.println(" (_-</ __/ __/ _ \\/ _ \\/ -_)");
+        Serial.println("/___/\\__/_/  \\___/_.__/\\__/ ");
+        Serial.println(ANSI_COLOR_RESET);
+        Serial.println("Capacitive sensing keyboard firmware");
+        Serial.println("*** https://github.com/tomsmalley/strobe");
+        Serial.println();
+        // Make sure the message prints fully and isn't waiting for the rest of the
+        // packet
+        Serial.send_now();
+        menu->start();
+    }
+    /*
     if (master && Serial.available()) {
         if (Serial.read() == 'm') {
             // TODO needs to actually be a menu
             menu->start();
         }
     }
+    */
 
-    // Update keyboard state. Each loop takes less than 20 us without waiting
-    for (int i = 0; i < State::NUM_KEYS; i++) {
-        // Record time to make sure we wait long enough
-        elapsedMicros time;
+    Serial.println();
+    Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
+    Serial.println("| Row |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |");
+    Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
+    // Update keyboard state.
+    for (int i = 0; i < controller->NUM_ROWS; i++) {
+        controller->selectRow(i);
+        Serial.printf("| %3u |", i);
+        for(int j = 0; j < controller->NUM_COLS; j++) {
 
-        // Get the mapping for this key
-        uint8_t mapping = getMapping(i);
+            uint8_t reading = controller->strobeRead(j);
+            if (j < 8) {
+                Serial.printf(" %3u |", reading);
+            }
 
-        // Read (or attempt to get) the key depth
-        if (Persist::keyIsInMatrix(i)) {
-            // Read key state, normalise, and store (16 us)
-            uint8_t reading = Key::strobeRead(i);
-            state->keys[i]->depth = Key::normalise(i, reading);
-        } else if (master) {
-            // If the key isn't in this matrix and this is the master, we can
-            // check the slave. If no slave is connected then the reply is
-            // always 0 which denotes no press
-            state->keys[i]->depth = requestFromSlave(i);
-        }
+            // Get the mapping for this key
+            //uint8_t mapping = getMapping(i);
 
+            /*
+            // Read (or attempt to get) the key depth
+            if (Persist::keyIsInMatrix(i)) {
+                // Read key state, normalise, and store (16 us)
+                uint8_t reading = Key::strobeRead(i);
+                state->keys[i]->depth = Key::normalise(i, reading);
+            } else if (master) {
+                // If the key isn't in this matrix and this is the master, we can
+                // check the slave. If no slave is connected then the reply is
+                // always 0 which denotes no press
+                state->keys[i]->depth = requestFromSlave(i);
+            }*/
+
+            /*
         // The rest only done on master
         if (master) {
 
@@ -156,12 +157,11 @@ void loop() {
 
         }
 
-        // Wait for 130 us
-        if (time < 130) {
-            delayMicroseconds(130 - time);
+        */
         }
-
+        Serial.println();
     }
+    Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
 
     if (master) {
         // TODO make this interrupt poll at 60Hz
