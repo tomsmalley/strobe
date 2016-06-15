@@ -5,15 +5,7 @@
 #include "Persist.h"
 #include "KeyMap.h"
 #include "State.h"
-
-// Escape codes for serial printing
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#include "EscapeCodes.h"
 
 #include "MainMenu.h"
 MainMenu* menu;
@@ -30,18 +22,18 @@ void setup() {
     Serial.begin(0);
 
     // Flash LED to show it is working
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 5; i++) {
         controller->turnOnLED();
         delay(100);
         controller->turnOffLED();
         delay(100);
     }
 
-    // print fancy intro
+    // Print fancy intro
     Serial.println(ANSI_COLOR_RESET);
     Serial.println("          _   _   _        "
         ANSI_COLOR_CYAN "  _       " ANSI_COLOR_RESET
-        "                     _     ");
+        "                     _");
     Serial.println("     __ _| |_| |_| |_  ___ "
         ANSI_COLOR_CYAN " (_)__ __ " ANSI_COLOR_RESET
         " __ _ _ _ __ __ _ __| |___ ");
@@ -68,6 +60,7 @@ void setup() {
 
     // DEBUGGING TEMP SETUP TODO
     // Settings
+    /*
     Persist::setMinThreshold(127);
     Persist::setMaxThreshold(153);
     Persist::setSensitivity(20);
@@ -78,6 +71,7 @@ void setup() {
     Persist::setMapping(1, 1, 0xA7);
     Persist::setMapping(2, 1, 0xAA);
     Persist::setMapping(3, 1, 0xAC);
+    */
 
 }
 

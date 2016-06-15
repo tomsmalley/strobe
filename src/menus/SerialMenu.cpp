@@ -2,6 +2,8 @@
 
 #include <WProgram.h>
 
+#include "EscapeCodes.h"
+
 // Constructor just sets name, functions, and number of functions
 SerialMenu::SerialMenu(const char* n, const SerialMenuFunction* fs, int s): name(n), functions(fs), size(s) {}
 
@@ -9,7 +11,7 @@ SerialMenu::SerialMenu(const char* n, const SerialMenuFunction* fs, int s): name
 void SerialMenu::printMenu() {
     // Show the menu name
     Serial.println();
-    Serial.print("*** ");
+    Serial.print(ANSI_COLOR_CYAN "*** " ANSI_COLOR_RESET);
     Serial.println(name);
     // List the available functions with the required inputs
     for (int i = 0; i < size; i++) {
@@ -20,7 +22,7 @@ void SerialMenu::printMenu() {
     }
     // Always list quit option
     Serial.println("'q' - Quit");
-    Serial.print(": ");
+    Serial.print("Waiting for input: ");
 }
 
 // Main menu function
