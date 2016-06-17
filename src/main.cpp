@@ -102,7 +102,8 @@ void loop() {
 
     Serial.println();
     Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
-    Serial.println("| Row |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |");
+    Serial.println("|     |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |");
+    Serial.println("| Row |  8  |  9  |  10 |  11 |  12 |  13 |  14 |  15 |");
     Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
     // Update keyboard state.
     for (int i = 0; i < controller->NUM_ROWS; i++) {
@@ -110,10 +111,16 @@ void loop() {
         Serial.printf("| %3u |", i);
         for(int j = 0; j < controller->NUM_COLS; j++) {
 
-            uint8_t reading = controller->strobeRead(j);
-            if (j < 8) {
-                Serial.printf(" %3u |", reading);
+            // Check in matrix
+            if (Persist::matrixPositionActive(i, j)) {
             }
+
+            uint8_t reading = controller->strobeRead(j);
+            if (j == 8) {
+                Serial.println();
+                Serial.print("|     |");
+            }
+            Serial.printf(" %3u |", reading);
 
             // Get the mapping for this key
             //uint8_t mapping = getMapping(i);
@@ -160,6 +167,7 @@ void loop() {
         */
         }
         Serial.println();
+        Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
     }
     Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
 

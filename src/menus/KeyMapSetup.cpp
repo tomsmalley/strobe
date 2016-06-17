@@ -15,6 +15,7 @@ const SerialMenuFunction KeyMapSetup::FUNCTIONS[ARRAY_SIZE] =
     };
 
 void KeyMapSetup::printValues() {
+    /*
     Serial.println();
     Serial.println("+-----+----+----+----+--LAYER--+----+----+----+");
     Serial.println("| Key | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |");
@@ -33,6 +34,7 @@ void KeyMapSetup::printValues() {
     }
     Serial.println("+-----+----+----+----+----+----+----+----+----+");
     // For each key
+    */
 }
 
 // TODO this function is lazily implemented, needs rewriting

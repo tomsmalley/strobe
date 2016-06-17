@@ -20,7 +20,7 @@ class Key {
          * @param value ADC reading
          * @return normalised reading
          */
-        static uint8_t normalise(int8_t keyID, uint8_t val);
+        static uint8_t normalise(uint8_t row, uint8_t col, uint8_t val);
 
         // Probably should make these private
         uint8_t depth = 0;

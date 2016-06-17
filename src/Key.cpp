@@ -9,9 +9,9 @@ Key::Key() {
     Serial.print("create");
 }
 
-uint8_t Key::normalise(int8_t keyID, uint8_t value) {
-    uint16_t calMin = Persist::getCalMin(keyID);
-    uint16_t calMax = Persist::getCalMax(keyID);
+uint8_t Key::normalise(uint8_t row, uint8_t col, uint8_t value) {
+    uint16_t calMin = Persist::getCalMin(row, col);
+    uint16_t calMax = Persist::getCalMax(row, col);
     // Clamp to max and min values
     if (value < calMin) {
         value = calMin;

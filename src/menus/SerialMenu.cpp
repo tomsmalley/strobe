@@ -34,7 +34,6 @@ void SerialMenu::start() {
         char command = getSerialCommand();
         // If the connection terminated just exit
         if (command == 'Q') return;
-        Serial.println(); // Clear line
         // User input q should always quit the menu
         if (command == 'q') {
             Serial.println("Quitting...");
@@ -44,6 +43,7 @@ void SerialMenu::start() {
         for (int i = 0; i < size; i++) {
             // Call the function if a match is found
             if (command == functions[i].getCommand()) {
+                Serial.println(functions[i].getName());
                 functions[i].execute();
             }
         }

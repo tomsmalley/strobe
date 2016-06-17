@@ -15,6 +15,7 @@ const SerialMenuFunction MatrixSetup::FUNCTIONS[ARRAY_SIZE] =
     };
 
 void MatrixSetup::printValues() {
+    /*
     Serial.println();
     Serial.println("+-----+-----+-----+");
     Serial.println("| Key | Row | Col |");
@@ -32,9 +33,11 @@ void MatrixSetup::printValues() {
         }
     }
     Serial.println("+-----+-----+-----+");
+    */
 }
 
 void MatrixSetup::setMatrix() {
+    /*
     Serial.println();
     Serial.println("Setting up the matrix. Send 'q' when done.");
     for (int i = 0; i < State::NUM_KEYS; i++) {
@@ -77,12 +80,15 @@ void MatrixSetup::setMatrix() {
         }
         Persist::setMatrixPosition(i, row, col);
     }
+    */
 }
 
 void MatrixSetup::resetValues() {
+    /*
     // Reset all keys
     for (int i = 0; i < State::NUM_KEYS; i++) {
-        Persist::setKeyNotInMatrix(i);
+        Persist::setMatrixPositionNotActive(i);
     }
     Serial.println("Memory reset.");
+    */
 }

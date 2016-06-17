@@ -61,60 +61,54 @@ void Persist::setNoiseFloor(uint8_t noise) {
 
 /* MATRIX POSITION (ROW AND COLUMN) FUNCTIONS */
 
-bool Persist::keyIsInMatrix(uint8_t keyID) {
-    uint8_t matrix = EEPROM.read(MEM_KEY_MATRIX + maskKeyID(keyID));
-    // Get the bit
-    return (matrix >> 7);
+bool Persist::matrixPositionActive(uint8_t row, uint8_t col) {
+    // Read the memory at key matrix address, sanitize input to 7 bit
+    uint8_t keyID = EEPROM.read(MEM_KEY_MATRIX + getHardwareID(row, col));
+    // 0-127 are keyIDs, 128 (0x80) denotes it is in matrix but ID not set
+    return (keyID <= 0x80);
 }
 
-void Persist::setKeyNotInMatrix(uint8_t keyID) {
-    EEPROM.update(MEM_KEY_MATRIX + maskKeyID(keyID), 0);
+void Persist::setMatrixPositionActive(uint8_t row, uint8_t col, bool active) {
+    // 128 (0x80) denotes active in matrix
+    uint8_t setting = active ? 0x80 : 0xFF;
+    EEPROM.update(MEM_KEY_MATRIX + getHardwareID(row, col), setting);
 }
 
-// Row bits (RRR) and column (CCCC) are stored in a single byte: 1RRR CCCC
-void Persist::setMatrixPosition(uint8_t keyID, uint8_t row, uint8_t col) {
+uint8_t Persist::getUserID(uint8_t row, uint8_t col) {
+    // Read the memory at key matrix address, sanitize input to 7 bit
+    return EEPROM.read(MEM_KEY_MATRIX + getHardwareID(row, col));
+}
+
+void Persist::setUserID(uint8_t row, uint8_t col, uint8_t userID) {
+    EEPROM.update(MEM_KEY_MATRIX + getHardwareID(row, col),
+            // Set bits to the masked keyID
+            (userID & 0x7F)
+    );
+}
+
+// Row bits (RRR) and column (CCCC) in unique 0-127 value: 0RRR CCCC
+uint8_t Persist::getHardwareID(uint8_t row, uint8_t col) {
     uint8_t rowMask = 0x07;
     uint8_t colMask = 0x0F;
-    uint8_t matrixPosition = 0;
-    // Set left bit to 1 to indicate the key is used
-    matrixPosition |= 1 << 7;
-    // Set row bits
-    matrixPosition |= (row & rowMask) << 4;
-    // Set column bits
-    matrixPosition |= col & colMask;
-    EEPROM.update(MEM_KEY_MATRIX + maskKeyID(keyID), matrixPosition);
-}
-
-uint8_t Persist::getRow(uint8_t keyID) {
-    uint8_t matrix = EEPROM.read(MEM_KEY_MATRIX + maskKeyID(keyID));
-    // Shift the three row bits and mask them
-    uint8_t mask = 0x07;
-    return (matrix >> 4) & mask;
-}
-
-uint8_t Persist::getCol(uint8_t keyID) {
-    uint8_t matrix = EEPROM.read(MEM_KEY_MATRIX + maskKeyID(keyID));
-    // Mask off the four column bits
-    uint8_t mask = 0x0F;
-    return matrix & mask;
+    return ((row & rowMask) << 4) | (col & colMask);
 }
 
 /* CALIBRATION FUNCTIONS */
 
-uint8_t Persist::getCalMin(uint8_t keyID) {
-    return EEPROM.read(MEM_KEY_CAL_MIN + maskKeyID(keyID));
+uint8_t Persist::getCalMin(uint8_t row, uint8_t col) {
+    return EEPROM.read(MEM_KEY_CAL_MIN + getHardwareID(row, col));
 }
 
-void Persist::setCalMin(uint8_t keyID, uint8_t value) {
-    EEPROM.update(MEM_KEY_CAL_MIN + maskKeyID(keyID), value);
+void Persist::setCalMin(uint8_t row, uint8_t col, uint8_t value) {
+    EEPROM.update(MEM_KEY_CAL_MIN + getHardwareID(row, col), value);
 }
 
-uint8_t Persist::getCalMax(uint8_t keyID) {
-    return EEPROM.read(MEM_KEY_CAL_MAX + maskKeyID(keyID));
+uint8_t Persist::getCalMax(uint8_t row, uint8_t col) {
+    return EEPROM.read(MEM_KEY_CAL_MAX + getHardwareID(row, col));
 }
 
-void Persist::setCalMax(uint8_t keyID, uint8_t value) {
-    EEPROM.update(MEM_KEY_CAL_MAX + maskKeyID(keyID), value);
+void Persist::setCalMax(uint8_t row, uint8_t col, uint8_t value) {
+    EEPROM.update(MEM_KEY_CAL_MAX + getHardwareID(row, col), value);
 }
 
 /* KEYMAP FUNCTIONS */

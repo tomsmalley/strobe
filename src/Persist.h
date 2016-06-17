@@ -8,9 +8,9 @@
  * Dividing the 2048 byte EEPROM of the teensy into blocks of 128 bytes, there
  * are 16 blocks. These are allocated as follows:
  * 0 -> User setting
- * 1 -> Key electronic index (row and column)
- * 2 -> Key Cal Min
- * 3 -> Key Cal Max
+ * 1 -> Key user ID (addressed by hardware ID)
+ * 2 -> Key Cal Min (addressed by hardware ID)
+ * 3 -> Key Cal Max (addressed by hardware ID)
  * 4 -> Keymap Layer 0
  * 5 -> Keymap Layer 1
  * 6 -> Keymap Layer 2
@@ -23,6 +23,8 @@
  * D -> Not used
  * E -> Not used
  * F -> Not used
+ * All key functions are addressed using the key user ID unless specified
+ * otherwise.
  */
 class Persist {
 
@@ -30,67 +32,23 @@ class Persist {
 
         /**
          * Check if a key is in this matrix.
+         * TODO update comments
          * @param keyID key ID
          * @return true if the key is in the matrix
          */
-        static bool keyIsInMatrix(uint8_t keyID);
+        static bool matrixPositionActive(uint8_t row, uint8_t col);
+        static void setMatrixPositionActive(uint8_t row, uint8_t col, bool
+                active);
 
-        /**
-         * Check if a key is in this matrix.
-         * @param keyID key ID
-         * @return true if the key is in the matrix
-         */
-        static void setKeyNotInMatrix(uint8_t keyID);
+        static uint8_t getUserID(uint8_t row, uint8_t col);
+        static void setUserID(uint8_t row, uint8_t col, uint8_t userID);
+        static uint8_t getHardwareID(uint8_t row, uint8_t col);
 
-        /**
-         * Get the row index of a given key.
-         * @param keyID key ID
-         * @return row index
-         */
-        static uint8_t getRow(uint8_t keyID);
+        static uint8_t getCalMin(uint8_t row, uint8_t col);
+        static void setCalMin(uint8_t row, uint8_t col, uint8_t value);
 
-        /**
-         * Get the column index of a given key.
-         * @param keyID key ID
-         * @return column index
-         */
-        static uint8_t getCol(uint8_t keyID);
-
-        /**
-         * Set the matrix position (row and column) of a given key.
-         * @param keyID key ID
-         * @param row row index
-         * @param col column index
-         */
-        static void setMatrixPosition(uint8_t keyID, uint8_t row, uint8_t column);
-
-        /**
-         * Get calibration minimum value for a key.
-         * @param keyID key ID
-         * @return calibration minimum value
-         */
-        static uint8_t getCalMin(uint8_t keyID);
-
-        /**
-         * Set calibration minimum value for a key.
-         * @param keyID key ID
-         * @param value minimum ADC reading
-         */
-        static void setCalMin(uint8_t keyID, uint8_t value);
-
-        /**
-         * Get calibration maximum value for a key.
-         * @param keyID key ID
-         * @return calibration maximum value
-         */
-        static uint8_t getCalMax(uint8_t keyID);
-
-        /**
-         * Set calibration maximum value for a key.
-         * @param keyID key ID
-         * @param value maximum ADC reading
-         */
-        static void setCalMax(uint8_t keyID, uint8_t value);
+        static uint8_t getCalMax(uint8_t row, uint8_t col);
+        static void setCalMax(uint8_t row, uint8_t col, uint8_t value);
 
         /**
          * Get mapping for a key on a given layer.
