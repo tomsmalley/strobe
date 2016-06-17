@@ -111,16 +111,17 @@ void loop() {
         Serial.printf("| %3u |", i);
         for(int j = 0; j < controller->NUM_COLS; j++) {
 
-            // Check in matrix
-            if (Persist::matrixPositionActive(i, j)) {
-            }
-
-            uint8_t reading = controller->strobeRead(j);
             if (j == 8) {
                 Serial.println();
                 Serial.print("|     |");
             }
-            Serial.printf(" %3u |", reading);
+            // Check in matrix
+            if (Persist::matrixPositionActive(i, j)) {
+                uint8_t reading = Key::normalise(i, j, controller->strobeRead(j));
+                Serial.printf(" %3u |", reading);
+            } else {
+                Serial.print("     |");
+            }
 
             // Get the mapping for this key
             //uint8_t mapping = getMapping(i);

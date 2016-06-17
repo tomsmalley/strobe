@@ -18,7 +18,7 @@ const SerialMenuFunction Calibration::FUNCTIONS[ARRAY_SIZE] =
     };
 
 void Calibration::printValues() {
-    /*
+
     Serial.println();
     Serial.println("Calibration data");
     uint8_t noise = Persist::getNoiseFloor();
@@ -29,23 +29,25 @@ void Calibration::printValues() {
     Serial.println("| Key | Min | Max | SNR |");
     Serial.println("+-----+-----+-----+-----+");
     // For each key
-    for (int i = 0; i < State::NUM_KEYS; i++) {
-        // Only show ones set in this matrix
-        if (Persist::keyIsInMatrix(i)) {
-            uint8_t min = Persist::getCalMin(i);
-            uint8_t max = Persist::getCalMax(i);
-            uint8_t snr = (max - min)/noise;
-            Serial.printf( "| %3u | %3u | %3u | %3u |"
-                         , i
-                         , min
-                         , max
-                         , snr
-                         );
-            Serial.println();
+    for (int i = 0; i < controller->NUM_ROWS; i++) {
+        for (int j = 0; j < controller->NUM_COLS; j++) {
+            // Only show ones set in this matrix
+            if (Persist::matrixPositionActive(i, j)) {
+                uint8_t min = Persist::getCalMin(i, j);
+                uint8_t max = Persist::getCalMax(i, j);
+                uint8_t snr = (max - min)/noise;
+                Serial.printf( "| %3u | %3u | %3u | %3u |"
+                             , Persist::getUserID(i, j)
+                             , min
+                             , max
+                             , snr
+                             );
+                Serial.println();
+            }
         }
     }
     Serial.println("+-----+-----+-----+-----+");
-    */
+
 }
 
 // Function finds the min/max values of ADC readings of each key
