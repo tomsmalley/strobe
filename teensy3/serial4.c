@@ -32,6 +32,8 @@
 #include "core_pins.h"
 #include "HardwareSerial.h"
 
+#ifdef HAS_KINETISK_UART3
+
 ////////////////////////////////////////////////////////////////
 // Tunable parameters (relatively safe to edit these numbers)
 ////////////////////////////////////////////////////////////////
@@ -58,23 +60,12 @@ static uint8_t use9Bits = 0;
 static volatile BUFTYPE tx_buffer[TX_BUFFER_SIZE];
 static volatile BUFTYPE rx_buffer[RX_BUFFER_SIZE];
 static volatile uint8_t transmitting = 0;
-#if defined(KINETISK)
-  static volatile uint8_t *transmit_pin=NULL;
-  #define transmit_assert()   *transmit_pin = 1
-  #define transmit_deassert() *transmit_pin = 0
-  static volatile uint8_t *rts_pin=NULL;
-  #define rts_assert()        *rts_pin = 0
-  #define rts_deassert()      *rts_pin = 1
-#elif defined(KINETISL)
-  static volatile uint8_t *transmit_pin=NULL;
-  static uint8_t transmit_mask=0;
-  #define transmit_assert()   *(transmit_pin+4) = transmit_mask;
-  #define transmit_deassert() *(transmit_pin+8) = transmit_mask;
-  static volatile uint8_t *rts_pin=NULL;
-  static uint8_t rts_mask=0;
-  #define rts_assert()        *(rts_pin+8) = rts_mask;
-  #define rts_deassert()      *(rts_pin+4) = rts_mask;
-#endif
+static volatile uint8_t *transmit_pin=NULL;
+#define transmit_assert()   *transmit_pin = 1
+#define transmit_deassert() *transmit_pin = 0
+static volatile uint8_t *rts_pin=NULL;
+#define rts_assert()        *rts_pin = 0
+#define rts_deassert()      *rts_pin = 1
 #if TX_BUFFER_SIZE > 255
 static volatile uint16_t tx_buffer_head = 0;
 static volatile uint16_t tx_buffer_tail = 0;
@@ -89,10 +80,8 @@ static volatile uint16_t rx_buffer_tail = 0;
 static volatile uint8_t rx_buffer_head = 0;
 static volatile uint8_t rx_buffer_tail = 0;
 #endif
-#if defined(KINETISL)
-static uint8_t rx_pin_num = 7;
-#endif
-static uint8_t tx_pin_num = 8;
+
+static uint8_t tx_pin_num = 32;
 
 // UART0 and UART1 are clocked by F_CPU, UART2 is clocked by F_BUS
 // UART0 has 8 byte fifo, UART1 and UART2 have 1 byte buffer
@@ -102,91 +91,71 @@ static uint8_t tx_pin_num = 8;
 #define C2_TX_COMPLETING	C2_ENABLE | UART_C2_TCIE
 #define C2_TX_INACTIVE		C2_ENABLE
 
-void serial3_begin(uint32_t divisor)
+void serial4_begin(uint32_t divisor)
 {
-	SIM_SCGC4 |= SIM_SCGC4_UART2;	// turn on clock, TODO: use bitband
+	SIM_SCGC4 |= SIM_SCGC4_UART3;	// turn on clock, TODO: use bitband
 	rx_buffer_head = 0;
 	rx_buffer_tail = 0;
 	tx_buffer_head = 0;
 	tx_buffer_tail = 0;
 	transmitting = 0;
-#if defined(KINETISK)
-	CORE_PIN7_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3);
-	CORE_PIN8_CONFIG = PORT_PCR_DSE | PORT_PCR_SRE | PORT_PCR_MUX(3);
-#elif defined(KINETISL)
-	switch (rx_pin_num) {
-		case 7: CORE_PIN7_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3); break;
-		case 6: CORE_PIN6_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3); break;
-	}
-	switch (tx_pin_num) {
-		case 8:  CORE_PIN8_CONFIG = PORT_PCR_DSE | PORT_PCR_SRE | PORT_PCR_MUX(3); break;
-		case 20: CORE_PIN20_CONFIG = PORT_PCR_DSE | PORT_PCR_SRE | PORT_PCR_MUX(3); break;
-	}
-#endif
-#if defined(HAS_KINETISK_UART2)
-	UART2_BDH = (divisor >> 13) & 0x1F;
-	UART2_BDL = (divisor >> 5) & 0xFF;
-	UART2_C4 = divisor & 0x1F;
-	UART2_C1 = 0;
-	UART2_PFIFO = 0;
-#elif defined(HAS_KINETISL_UART2)
-	UART2_BDH = (divisor >> 8) & 0x1F;
-	UART2_BDL = divisor & 0xFF;
-	UART2_C1 = 0;
-#endif
-	UART2_C2 = C2_TX_INACTIVE;
-	NVIC_SET_PRIORITY(IRQ_UART2_STATUS, IRQ_PRIORITY);
-	NVIC_ENABLE_IRQ(IRQ_UART2_STATUS);
+	CORE_PIN31_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3);
+	CORE_PIN32_CONFIG = PORT_PCR_DSE | PORT_PCR_SRE | PORT_PCR_MUX(3);
+	UART3_BDH = (divisor >> 13) & 0x1F;
+	UART3_BDL = (divisor >> 5) & 0xFF;
+	UART3_C4 = divisor & 0x1F;
+	UART3_C1 = 0;
+	UART3_PFIFO = 0;
+	UART3_C2 = C2_TX_INACTIVE;
+	NVIC_SET_PRIORITY(IRQ_UART3_STATUS, IRQ_PRIORITY);
+	NVIC_ENABLE_IRQ(IRQ_UART3_STATUS);
 }
 
-void serial3_format(uint32_t format)
+void serial4_format(uint32_t format)
 {
 	uint8_t c;
 
-	c = UART2_C1;
+	c = UART3_C1;
 	c = (c & ~0x13) | (format & 0x03);	// configure parity
 	if (format & 0x04) c |= 0x10;		// 9 bits (might include parity)
-	UART2_C1 = c;
-	if ((format & 0x0F) == 0x04) UART2_C3 |= 0x40; // 8N2 is 9 bit with 9th bit always 1
-	c = UART2_S2 & ~0x10;
+	UART3_C1 = c;
+	if ((format & 0x0F) == 0x04) UART3_C3 |= 0x40; // 8N2 is 9 bit with 9th bit always 1
+	c = UART3_S2 & ~0x10;
 	if (format & 0x10) c |= 0x10;		// rx invert
-	UART2_S2 = c;
-	c = UART2_C3 & ~0x10;
+	UART3_S2 = c;
+	c = UART3_C3 & ~0x10;
 	if (format & 0x20) c |= 0x10;		// tx invert
-	UART2_C3 = c;
+	UART3_C3 = c;
 #ifdef SERIAL_9BIT_SUPPORT
-	c = UART2_C4 & 0x1F;
+	c = UART3_C4 & 0x1F;
 	if (format & 0x08) c |= 0x20;		// 9 bit mode with parity (requires 10 bits)
-	UART2_C4 = c;
+	UART3_C4 = c;
 	use9Bits = format & 0x80;
 #endif
 }
 
-void serial3_end(void)
+void serial4_end(void)
 {
-	if (!(SIM_SCGC4 & SIM_SCGC4_UART2)) return;
+	if (!(SIM_SCGC4 & SIM_SCGC4_UART3)) return;
 	while (transmitting) yield();  // wait for buffered data to send
-	NVIC_DISABLE_IRQ(IRQ_UART2_STATUS);
-	UART2_C2 = 0;
-	CORE_PIN7_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_MUX(1);
-	CORE_PIN8_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_MUX(1);
+	NVIC_DISABLE_IRQ(IRQ_UART3_STATUS);
+	UART3_C2 = 0;
+	CORE_PIN31_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_MUX(1);
+	CORE_PIN32_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_MUX(1);
 	rx_buffer_head = 0;
 	rx_buffer_tail = 0;
 	if (rts_pin) rts_deassert();
 }
 
-void serial3_set_transmit_pin(uint8_t pin)
+void serial4_set_transmit_pin(uint8_t pin)
 {
 	while (transmitting) ;
 	pinMode(pin, OUTPUT);
 	digitalWrite(pin, LOW);
 	transmit_pin = portOutputRegister(pin);
-	#if defined(KINETISL)
-	transmit_mask = digitalPinToBitMask(pin);
-	#endif
 }
 
-void serial3_set_tx(uint8_t pin, uint8_t opendrain)
+void serial4_set_tx(uint8_t pin, uint8_t opendrain)
 {
 	uint32_t cfg;
 
@@ -194,10 +163,7 @@ void serial3_set_tx(uint8_t pin, uint8_t opendrain)
 	if (pin == tx_pin_num) return;
 	if ((SIM_SCGC4 & SIM_SCGC4_UART2)) {
 		switch (tx_pin_num & 127) {
-			case 8:  CORE_PIN8_CONFIG = 0; break; // PTD3
-	#if defined(KINETISL)
-			case 20: CORE_PIN20_CONFIG = 0; break; // PTD5
-	#endif
+			case 32:  CORE_PIN32_CONFIG = 0; break; // PTB11
 		}
 		if (opendrain) {
 			cfg = PORT_PCR_DSE | PORT_PCR_ODE;
@@ -205,93 +171,53 @@ void serial3_set_tx(uint8_t pin, uint8_t opendrain)
 			cfg = PORT_PCR_DSE | PORT_PCR_SRE;
 		}
 		switch (pin & 127) {
-			case 8:  CORE_PIN8_CONFIG = cfg | PORT_PCR_MUX(3); break;
-	#if defined(KINETISL)
-			case 20: CORE_PIN20_CONFIG = cfg | PORT_PCR_MUX(3); break;
-	#endif
+			case 32:  CORE_PIN32_CONFIG = cfg | PORT_PCR_MUX(3); break;
 		}
 	}
 	tx_pin_num = pin;
+
 }
 
-void serial3_set_rx(uint8_t pin)
+void serial4_set_rx(uint8_t pin)
 {
-	#if defined(KINETISL)
-	if (pin == rx_pin_num) return;
-	if ((SIM_SCGC4 & SIM_SCGC4_UART2)) {
-		switch (rx_pin_num) {
-			case 7: CORE_PIN7_CONFIG = 0; break; // PTD2
-			case 6: CORE_PIN6_CONFIG = 0; break; // PTD4
-		}
-		switch (pin) {
-			case 7: CORE_PIN7_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3); break;
-			case 6: CORE_PIN6_CONFIG = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_PFE | PORT_PCR_MUX(3); break;
-		}
-	}
-	rx_pin_num = pin;
-	#endif
 }
 
-int serial3_set_rts(uint8_t pin)
+int serial4_set_rts(uint8_t pin)
 {
-	if (!(SIM_SCGC4 & SIM_SCGC4_UART2)) return 0;
+	if (!(SIM_SCGC4 & SIM_SCGC4_UART3)) return 0;
 	if (pin < CORE_NUM_DIGITAL) {
 		rts_pin = portOutputRegister(pin);
-		#if defined(KINETISL)
-		rts_mask = digitalPinToBitMask(pin);
-		#endif
 		pinMode(pin, OUTPUT);
 		rts_assert();
 	} else {
 		rts_pin = NULL;
 		return 0;
 	}
-/*
-	if (pin == 2) {
-		CORE_PIN2_CONFIG = PORT_PCR_MUX(3);
-	} else {
-		UART2_MODEM &= ~UART_MODEM_RXRTSE;
-		return 0;
-	}
-	UART2_MODEM |= UART_MODEM_RXRTSE;
-*/
 	return 1;
 }
 
-int serial3_set_cts(uint8_t pin)
+int serial4_set_cts(uint8_t pin)
 {
-#if defined(KINETISK)
-	if (!(SIM_SCGC4 & SIM_SCGC4_UART2)) return 0;
-	if (pin == 14) {
-		CORE_PIN14_CONFIG = PORT_PCR_MUX(3) | PORT_PCR_PE; // weak pulldown
-	} else {
-		UART2_MODEM &= ~UART_MODEM_TXCTSE;
-		return 0;
-	}
-	UART2_MODEM |= UART_MODEM_TXCTSE;
-	return 1;
-#else
 	return 0;
-#endif
 }
 
-void serial3_putchar(uint32_t c)
+void serial4_putchar(uint32_t c)
 {
 	uint32_t head, n;
 
-	if (!(SIM_SCGC4 & SIM_SCGC4_UART2)) return;
+	if (!(SIM_SCGC4 & SIM_SCGC4_UART3)) return;
 	if (transmit_pin) transmit_assert();
 	head = tx_buffer_head;
 	if (++head >= TX_BUFFER_SIZE) head = 0;
 	while (tx_buffer_tail == head) {
 		int priority = nvic_execution_priority();
 		if (priority <= IRQ_PRIORITY) {
-			if ((UART2_S1 & UART_S1_TDRE)) {
+			if ((UART3_S1 & UART_S1_TDRE)) {
 				uint32_t tail = tx_buffer_tail;
 				if (++tail >= TX_BUFFER_SIZE) tail = 0;
 				n = tx_buffer[tail];
-				if (use9Bits) UART2_C3 = (UART2_C3 & ~0x40) | ((n & 0x100) >> 2);
-				UART2_D = n;
+				if (use9Bits) UART3_C3 = (UART3_C3 & ~0x40) | ((n & 0x100) >> 2);
+				UART3_D = n;
 				tx_buffer_tail = tail;
 			}
 		} else if (priority >= 256) {
@@ -301,21 +227,21 @@ void serial3_putchar(uint32_t c)
 	tx_buffer[head] = c;
 	transmitting = 1;
 	tx_buffer_head = head;
-	UART2_C2 = C2_TX_ACTIVE;
+	UART3_C2 = C2_TX_ACTIVE;
 }
 
-void serial3_write(const void *buf, unsigned int count)
+void serial4_write(const void *buf, unsigned int count)
 {
 	const uint8_t *p = (const uint8_t *)buf;
-	while (count-- > 0) serial3_putchar(*p++);
+	while (count-- > 0) serial4_putchar(*p++);
 }
 
-void serial3_flush(void)
+void serial4_flush(void)
 {
 	while (transmitting) yield(); // wait
 }
 
-int serial3_write_buffer_free(void)
+int serial4_write_buffer_free(void)
 {
 	uint32_t head, tail;
 
@@ -325,7 +251,7 @@ int serial3_write_buffer_free(void)
 	return tail - head - 1;
 }
 
-int serial3_available(void)
+int serial4_available(void)
 {
 	uint32_t head, tail;
 
@@ -335,7 +261,7 @@ int serial3_available(void)
 	return RX_BUFFER_SIZE + head - tail;
 }
 
-int serial3_getchar(void)
+int serial4_getchar(void)
 {
 	uint32_t head, tail;
 	int c;
@@ -355,7 +281,7 @@ int serial3_getchar(void)
 	return c;
 }
 
-int serial3_peek(void)
+int serial4_peek(void)
 {
 	uint32_t head, tail;
 
@@ -366,7 +292,7 @@ int serial3_peek(void)
 	return rx_buffer[tail];
 }
 
-void serial3_clear(void)
+void serial4_clear(void)
 {
 	rx_buffer_head = rx_buffer_tail;
 	if (rts_pin) rts_assert();
@@ -380,16 +306,16 @@ void serial3_clear(void)
 //   LIN break detect		    UART_S2_LBKDIF
 //   RxD pin active edge	    UART_S2_RXEDGIF
 
-void uart2_status_isr(void)
+void uart3_status_isr(void)
 {
 	uint32_t head, tail, n;
 	uint8_t c;
 
-	if (UART2_S1 & UART_S1_RDRF) {
-		if (use9Bits && (UART2_C3 & 0x80)) {
-			n = UART2_D | 0x100;
+	if (UART3_S1 & UART_S1_RDRF) {
+		if (use9Bits && (UART3_C3 & 0x80)) {
+			n = UART3_D | 0x100;
 		} else {
-			n = UART2_D;
+			n = UART3_D;
 		}
 		head = rx_buffer_head + 1;
 		if (head >= RX_BUFFER_SIZE) head = 0;
@@ -405,25 +331,25 @@ void uart2_status_isr(void)
 			if (avail >= RTS_HIGH_WATERMARK) rts_deassert();
 		}
 	}
-	c = UART2_C2;
-	if ((c & UART_C2_TIE) && (UART2_S1 & UART_S1_TDRE)) {
+	c = UART3_C2;
+	if ((c & UART_C2_TIE) && (UART3_S1 & UART_S1_TDRE)) {
 		head = tx_buffer_head;
 		tail = tx_buffer_tail;
 		if (head == tail) {
-			UART2_C2 = C2_TX_COMPLETING;
+			UART3_C2 = C2_TX_COMPLETING;
 		} else {
 			if (++tail >= TX_BUFFER_SIZE) tail = 0;
 			n = tx_buffer[tail];
-			if (use9Bits) UART2_C3 = (UART2_C3 & ~0x40) | ((n & 0x100) >> 2);
-			UART2_D = n;
+			if (use9Bits) UART3_C3 = (UART3_C3 & ~0x40) | ((n & 0x100) >> 2);
+			UART3_D = n;
 			tx_buffer_tail = tail;
 		}
 	}
-	if ((c & UART_C2_TCIE) && (UART2_S1 & UART_S1_TC)) {
+	if ((c & UART_C2_TCIE) && (UART3_S1 & UART_S1_TC)) {
 		transmitting = 0;
 		if (transmit_pin) transmit_deassert();
-		UART2_C2 = C2_TX_INACTIVE;
+		UART3_C2 = C2_TX_INACTIVE;
 	}
 }
 
-
+#endif // HAS_KINETISK_UART3

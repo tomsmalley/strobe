@@ -100,27 +100,23 @@ void loop() {
     }
     */
 
-    Serial.println();
-    Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
-    Serial.println("|     |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |");
-    Serial.println("| Row |  8  |  9  |  10 |  11 |  12 |  13 |  14 |  15 |");
-    Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
+    /*
+    if (Serial.dtr()) {
+        Serial.println();
+        Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
+        Serial.println("|     |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |");
+        Serial.println("| Row |  8  |  9  |  10 |  11 |  12 |  13 |  14 |  15 |");
+        Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
+    }
+    */
     // Update keyboard state.
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        controller->selectRow(i);
-        Serial.printf("| %3u |", i);
-        for(int j = 0; j < controller->NUM_COLS; j++) {
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        controller->selectReadLine(i);
+        for(int j = 0; j < controller->NUM_STROBES; j++) {
 
-            if (j == 8) {
-                Serial.println();
-                Serial.print("|     |");
-            }
             // Check in matrix
             if (Persist::matrixPositionActive(i, j)) {
                 uint8_t reading = Key::normalise(i, j, controller->strobeRead(j));
-                Serial.printf(" %3u |", reading);
-            } else {
-                Serial.print("     |");
             }
 
             // Get the mapping for this key
@@ -167,15 +163,14 @@ void loop() {
 
         */
         }
-        Serial.println();
-        Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
     }
-    Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
 
     if (master) {
         // TODO make this interrupt poll at 60Hz
+        /*
         Keyboard.send_now();
         Mouse.move(state->getMouseX(), state->getMouseY());
+        */
         state->resetMousePos();
     }
 

@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2016 PJRC.COM, LLC.
+ * Copyright (c) 2013 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,16 +28,45 @@
  * SOFTWARE.
  */
 
-#ifndef _UTIL_PARITY_H_
-#define _UTIL_PARITY_H_
+#ifndef USBtouchscreen_h_
+#define USBtouchscreen_h_
 
-static inline uint8_t parity_even_bit(uint8_t x) __attribute__((pure, always_inline, unused));
-static inline uint8_t parity_even_bit(uint8_t x)
-{
-	x ^= x >> 1;
-	x ^= x >> 2;
-	x ^= x >> 4;
-	return x & 1;
-}
+#include "usb_desc.h"
 
+#if defined(MULTITOUCH_INTERFACE)
+
+#include <inttypes.h>
+
+// C language implementation
+#ifdef __cplusplus
+extern "C" {
 #endif
+void usb_touchscreen_press(uint8_t finger, uint32_t x, uint32_t y, uint32_t pressure);
+void usb_touchscreen_release(uint8_t finger);
+void usb_touchscreen_update_callback(void);
+#ifdef __cplusplus
+}
+#endif
+
+// C++ interface
+#ifdef __cplusplus
+class usb_touchscreen_class
+{
+        public:
+        void begin(void) { }
+        void end(void) { }
+	void press(uint8_t finger, uint32_t x, uint32_t y, uint32_t pressure=128) {
+		usb_touchscreen_press(finger, x, y, pressure);
+	}
+	void release(uint8_t finger) {
+		usb_touchscreen_release(finger);
+	}
+};
+extern usb_touchscreen_class TouchscreenUSB;
+
+#endif // __cplusplus
+
+#endif // MULTITOUCH_INTERFACE
+
+#endif // USBtouchscreen_h_
+

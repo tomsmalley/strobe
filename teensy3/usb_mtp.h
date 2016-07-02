@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2016 PJRC.COM, LLC.
+ * Copyright (c) 2013 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,16 +28,46 @@
  * SOFTWARE.
  */
 
-#ifndef _UTIL_PARITY_H_
-#define _UTIL_PARITY_H_
+#ifndef USB_MTP_h_
+#define USB_MTP_h_
 
-static inline uint8_t parity_even_bit(uint8_t x) __attribute__((pure, always_inline, unused));
-static inline uint8_t parity_even_bit(uint8_t x)
-{
-	x ^= x >> 1;
-	x ^= x >> 2;
-	x ^= x >> 4;
-	return x & 1;
-}
+#include "usb_desc.h"
 
+#if defined(MTP_INTERFACE)
+
+#include <inttypes.h>
+
+
+// C language implementation
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+void usb_mtp_update(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+// C++ interface
+#ifdef __cplusplus
+class usb_mpt_class
+{
+        public:
+        void begin(void) { }
+        void end(void) { }
+        void update() __attribute__((always_inline)) {
+		usb_mtp_update();
+	}
+	private:
+};
+
+extern usb_mpt_class MTPDisk;
+
+
+#endif // __cplusplus
+
+#endif // MTP_INTERFACE
+
+#endif // USB_MTP_h_
+

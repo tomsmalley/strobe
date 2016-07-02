@@ -9,15 +9,16 @@ HardwareController::HardwareController() {
     // LED pin
     pinMode(PIN_LED, OUTPUT);
     // Analog in pin
-    pinMode(PIN_ROW_READ, INPUT);
+    pinMode(PIN_READ, INPUT);
     // Digital multiplexer controller pins
     pinMode(PIN_MUX_CONTROL[0], OUTPUT);
     pinMode(PIN_MUX_CONTROL[1], OUTPUT);
     pinMode(PIN_MUX_CONTROL[2], OUTPUT);
     // Column pins
-    for (int i = 0; i < NUM_COLS; i++) {
-        pinMode(PIN_COL[i], OUTPUT);
+    for (int i = 0; i < NUM_STROBES; i++) {
+        pinMode(PIN_STROBE[i], OUTPUT);
     }
+    pinMode(PIN_DRAIN, OUTPUT_OPENDRAIN);
 
     // Row ADC
     adc = new ADC();
@@ -32,54 +33,67 @@ HardwareController::HardwareController() {
 
 /*** Reading functions ***/
 
-uint8_t HardwareController::strobeRead(uint8_t col) {
+uint8_t HardwareController::strobeRead(uint8_t strobeLine) {
     uint8_t value;
     // Make sure we have waited enough time
-    if (timeSinceLastStrobe < ROW_RELAX_TIME) {
-        delayMicroseconds(ROW_RELAX_TIME - timeSinceLastStrobe);
+    long time = timeSinceLastStrobe; // Capture current value
+    if (time < RELAX_TIME) {
+        delayMicroseconds(RELAX_TIME - time);
     }
-
+    // Float the drain pin
+    setDrainFloating();
     // Time sensitive part - interrupts can affect delayMicroseconds
     noInterrupts();
     // Set column high ("strobe")
-    controller->setColHigh(col);
-    // Wait for amplifier to catch up
-    delayMicroseconds(3);
-    // Read the row value
-    value = controller->readRow();
-    // Set column low
-    controller->setColLow(col);
+    setStrobeHigh(strobeLine);
+    // Read the selected key value
+    value = readSelected();
+    // Set strobe line low
+    setStrobeLow(strobeLine);
     // Turn back on interrupts and wait for row to relax to 0V
     interrupts();
-
+    // Ground the drain pin
+    setDrainGround();
+    // Start timer for next call
     timeSinceLastStrobe = elapsedMicros();
     return value;
 }
 
-void HardwareController::selectRow(uint8_t row) const {
+void HardwareController::selectReadLine(uint8_t line) const {
     // Get binary representation using bitwise operations
-    digitalWrite(PIN_MUX_CONTROL[0], (row) & 1);
-    digitalWrite(PIN_MUX_CONTROL[1], (row >> 1) & 1);
-    digitalWrite(PIN_MUX_CONTROL[2], (row >> 2) & 1);
-    delayMicroseconds(ROW_RELAX_TIME);
+    digitalWrite(PIN_MUX_CONTROL[0], (line) & 1);
+    digitalWrite(PIN_MUX_CONTROL[1], (line >> 1) & 1);
+    digitalWrite(PIN_MUX_CONTROL[2], (line >> 2) & 1);
+    delayMicroseconds(RELAX_TIME);
 }
 
 
 /*** Row functions ***/
 
-uint8_t HardwareController::readRow() const {
-    return adc->analogRead(PIN_ROW_READ, ADC_0);
+uint8_t HardwareController::readSelected() const {
+    return adc->analogRead(PIN_READ, ADC_0);
 }
 
 
 /*** Col functions ***/
 
-void HardwareController::setColHigh(uint8_t col) const {
-    digitalWrite(PIN_COL[col], HIGH);
+void HardwareController::setStrobeHigh(uint8_t line) const {
+    digitalWrite(PIN_STROBE[line], HIGH);
 }
 
-void HardwareController::setColLow(uint8_t col) const {
-    digitalWrite(PIN_COL[col], LOW);
+void HardwareController::setStrobeLow(uint8_t line) const {
+    digitalWrite(PIN_STROBE[line], LOW);
+}
+
+
+/*** Drain functions ***/
+
+void HardwareController::setDrainFloating() const {
+    digitalWrite(PIN_DRAIN, HIGH);
+}
+
+void HardwareController::setDrainGround() const {
+    digitalWrite(PIN_DRAIN, LOW);
 }
 
 

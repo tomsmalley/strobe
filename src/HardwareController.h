@@ -21,9 +21,9 @@ class HardwareController {
         HardwareController();
 
 
-        // Used for loops
-        const uint8_t NUM_COLS = 16;
-        const uint8_t NUM_ROWS = 8; // 7051 spec
+        // Matrix definitions, public for loop limits
+        static const uint8_t NUM_STROBES = 6;
+        static const uint8_t NUM_READS = 7;
 
 
         /*** Reading functions ***/
@@ -32,16 +32,16 @@ class HardwareController {
          * Strobe a column and read the (preselected) row voltage.
          * Must wait long enough for rows to relax between function calls!
          * Returns 0-255 denoting row voltage (not key depth!).
-         * @param col column number
+         * @param strobeLine strobe line number
          * @return ADC reading for row voltage
          */
-        uint8_t strobeRead(uint8_t col);
+        uint8_t strobeRead(uint8_t strobeLine);
 
         /**
          * Select a row on the multiplexer.
-         * @param row number of row to select (0-7)
+         * @param line number of read line to select (0-7)
          */
-        void selectRow(uint8_t row) const;
+        void selectReadLine(uint8_t line) const;
 
 
         /*** LED functions ***/
@@ -54,25 +54,38 @@ class HardwareController {
         /*** Row functions ***/
 
         /**
-         * Read the selected row with the ADC.
+         * Read the selected line with the ADC.
          * @return ADC reading (0-255)
          */
-        uint8_t readRow() const;
+        uint8_t readSelected() const;
 
 
         /*** Col functions ***/
 
         /**
-         * Set column to 3.3V (strobe).
+         * Set strobe line to 3.3V
          * @param col number of col to select (0-15)
          */
-        void setColHigh(uint8_t col) const;
+        void setStrobeHigh(uint8_t line) const;
 
         /**
-         * Set column to 0V (relax).
+         * Set strobe line to 0V
          * @param col number of col to select (0-15)
          */
-        void setColLow(uint8_t col) const;
+        void setStrobeLow(uint8_t line) const;
+
+
+        /*** Drain functions ***/
+
+        /**
+         * Set drain to float.
+         */
+        void setDrainFloating() const;
+
+        /**
+         * Set drain to ground.
+         */
+        void setDrainGround() const;
 
 
         // ADC object, setup in constructor
@@ -85,18 +98,16 @@ class HardwareController {
 
         const int PIN_LED = 13;
         // Pin from row line multiplexer
-        const int PIN_ROW_READ = A0;
+        const int PIN_READ = A0;
         // Control pins to address the 8 mux channels
         const int PIN_MUX_CONTROL[3] = { 3, 2, 1 };
-        const int PIN_COL[16] =
-        {  4,  5,  6,  7
-        ,  8,  9, 10, 11
-        , 12, 15, 16, 17
-        , 18, 19, 20, 21
-        };
+        const int PIN_STROBE[NUM_STROBES] = { 11, 12, 27, 28, 29, 30 };
+        // Fast drain pin
+        const int PIN_DRAIN = 15;
 
         // How long it takes the matrix to relax fully in microseconds
-        const uint8_t ROW_RELAX_TIME = 130;
+        // Determined by RC circuit time constant * 5
+        const uint8_t RELAX_TIME = 5;
 
 
 };

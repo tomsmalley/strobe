@@ -29,8 +29,8 @@ void Calibration::printValues() {
     Serial.println("| Key | Min | Max | SNR |");
     Serial.println("+-----+-----+-----+-----+");
     // For each key
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        for (int j = 0; j < controller->NUM_COLS; j++) {
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        for (int j = 0; j < controller->NUM_STROBES; j++) {
             // Only show ones set in this matrix
             if (Persist::matrixPositionActive(i, j)) {
                 uint8_t min = Persist::getCalMin(i, j);
@@ -66,10 +66,10 @@ void Calibration::fullRoutine(bool autoDetect) {
     Serial.println();
     Serial.println("Do not press any keys!");
     Serial.print("Determining noise floor");
-    uint8_t lowMin[controller->NUM_ROWS][controller->NUM_COLS];
-    uint8_t lowMax[controller->NUM_ROWS][controller->NUM_COLS];
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        for (int j = 0; j < controller->NUM_COLS; j++) {
+    uint8_t lowMin[controller->NUM_READS][controller->NUM_STROBES];
+    uint8_t lowMax[controller->NUM_READS][controller->NUM_STROBES];
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        for (int j = 0; j < controller->NUM_STROBES; j++) {
             lowMin[i][j] = 0xFF;
             lowMax[i][j] = 0x00;
         }
@@ -79,9 +79,9 @@ void Calibration::fullRoutine(bool autoDetect) {
     // Do for 5 seconds
     while (time < 5000) {
         // Read key states
-        for (int i = 0; i < controller->NUM_ROWS; i++) {
-            controller->selectRow(i);
-            for (int j = 0; j < controller->NUM_COLS; j++) {
+        for (int i = 0; i < controller->NUM_READS; i++) {
+            controller->selectReadLine(i);
+            for (int j = 0; j < controller->NUM_STROBES; j++) {
                 uint8_t value = controller->strobeRead(j);
                 // Update min and max values
                 if (value < lowMin[i][j]) { lowMin[i][j] = value; }
@@ -100,9 +100,9 @@ void Calibration::fullRoutine(bool autoDetect) {
     // Peak values
     Serial.println("Press and hold each key in turn. Send 'q' when done.");
     // Set min values to 255 and max values to 0 for comparison checking
-    uint8_t highMax[controller->NUM_ROWS][controller->NUM_COLS];
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        for (int j = 0; j < controller->NUM_COLS; j++) {
+    uint8_t highMax[controller->NUM_READS][controller->NUM_STROBES];
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        for (int j = 0; j < controller->NUM_STROBES; j++) {
             highMax[i][j] = 0x00;
         }
     }
@@ -117,9 +117,9 @@ void Calibration::fullRoutine(bool autoDetect) {
             }
         }
         // Record the maxima of each key
-        for (int i = 0; i < controller->NUM_ROWS; i++) {
-            controller->selectRow(i);
-            for (int j = 0; j < controller->NUM_COLS; j++) {
+        for (int i = 0; i < controller->NUM_READS; i++) {
+            controller->selectReadLine(i);
+            for (int j = 0; j < controller->NUM_STROBES; j++) {
                 uint8_t value = controller->strobeRead(j);
                 // Update max values
                 if (value > highMax[i][j]) { highMax[i][j] = value; }
@@ -129,10 +129,10 @@ void Calibration::fullRoutine(bool autoDetect) {
     Serial.println("Done.");
     Serial.println();
 
-    // Determine SNR
-    uint8_t snr[controller->NUM_ROWS][controller->NUM_COLS];
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        for (int j = 0; j < controller->NUM_COLS; j++) {
+    // Determine SNR TODO highMax < Lowmax makes overflow
+    uint8_t snr[controller->NUM_READS][controller->NUM_STROBES];
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        for (int j = 0; j < controller->NUM_STROBES; j++) {
             uint16_t noise = lowMax[i][j] - lowMin[i][j];
             uint16_t signal = highMax[i][j] - lowMin[i][j] - noise;
             if (noise == 0) { noise = 1; }
@@ -149,8 +149,8 @@ void Calibration::fullRoutine(bool autoDetect) {
         // Save keys with SNR above threshold as active
         const uint8_t SNR_THRESHOLD = 5;
         uint8_t keyCount = 0;
-        for (int i = 0; i < controller->NUM_ROWS; i++) {
-            for (int j = 0; j < controller->NUM_COLS; j++) {
+        for (int i = 0; i < controller->NUM_READS; i++) {
+            for (int j = 0; j < controller->NUM_STROBES; j++) {
                 if (snr[i][j] > SNR_THRESHOLD) {
                     Persist::setMatrixPositionActive(i, j, true);
                     keyCount++;
@@ -169,9 +169,9 @@ void Calibration::fullRoutine(bool autoDetect) {
     Serial.println("+-----+-----+-----+--------+--------+---------+");
     Serial.println("| ROW | COL | SNR | LOWMIN | LOWMAX | HIGHMAX |");
     Serial.println("+-----+-----+-----+--------+--------+---------+");
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
+    for (int i = 0; i < controller->NUM_READS; i++) {
         uint8_t colCount = 0;
-        for(int j = 0; j < controller->NUM_COLS; j++) {
+        for(int j = 0; j < controller->NUM_STROBES; j++) {
             if (Persist::matrixPositionActive(i, j)) {
                 Serial.print("| ");
                 if (colCount == 0) {
@@ -198,8 +198,8 @@ void Calibration::fullRoutine(bool autoDetect) {
     // Noise floor
     Serial.println();
     uint8_t maxNoise = 0;
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        for(int j = 0; j < controller->NUM_COLS; j++) {
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        for(int j = 0; j < controller->NUM_STROBES; j++) {
             // Only show ones set in this matrix
             if (Persist::matrixPositionActive(i, j)) {
                 uint8_t noise = lowMax[i][j] - lowMin[i][j];
@@ -215,8 +215,8 @@ void Calibration::fullRoutine(bool autoDetect) {
     // Calibration
     Serial.println();
     uint8_t noiseFloor = Persist::getNoiseFloor();
-    for (int i = 0; i < controller->NUM_ROWS; i++) {
-        for(int j = 0; j < controller->NUM_COLS; j++) {
+    for (int i = 0; i < controller->NUM_READS; i++) {
+        for(int j = 0; j < controller->NUM_STROBES; j++) {
             // Only show ones set in this matrix
             if (Persist::matrixPositionActive(i, j)) {
                 uint8_t min = lowMin[i][j] + noiseFloor/2;

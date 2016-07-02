@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2014 PJRC.COM, LLC.
+ * Copyright (c) 2013 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -30,8 +30,8 @@
 
 MEMORY
 {
-	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 62K
-	RAM  (rwx) : ORIGIN = 0x1FFFF800, LENGTH = 8K
+	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 1024K
+	RAM  (rwx) : ORIGIN = 0x1FFF0000, LENGTH = 256K
 }
 
 
@@ -108,5 +108,7 @@ SECTIONS
 
 	_estack = ORIGIN(RAM) + LENGTH(RAM);
 }
+
+
 
 

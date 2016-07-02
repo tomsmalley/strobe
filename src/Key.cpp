@@ -5,9 +5,7 @@
 #include "Persist.h"
 #include "HardwareController.h"
 
-Key::Key() {
-    Serial.print("create");
-}
+Key::Key() { }
 
 uint8_t Key::normalise(uint8_t row, uint8_t col, uint8_t value) {
     uint16_t calMin = Persist::getCalMin(row, col);

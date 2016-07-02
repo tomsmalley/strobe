@@ -1,6 +1,6 @@
 /* Teensyduino Core Library
  * http://www.pjrc.com/teensy/
- * Copyright (c) 2016 PJRC.COM, LLC.
+ * Copyright (c) 2015 PJRC.COM, LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,16 +28,24 @@
  * SOFTWARE.
  */
 
-#ifndef _UTIL_PARITY_H_
-#define _UTIL_PARITY_H_
+#include "usb_dev.h"
+#include "usb_mtp.h"
+#include "core_pins.h" // for yield()
+#include "HardwareSerial.h"
 
-static inline uint8_t parity_even_bit(uint8_t x) __attribute__((pure, always_inline, unused));
-static inline uint8_t parity_even_bit(uint8_t x)
+#ifdef MTP_INTERFACE // defined by usb_dev.h -> usb_desc.h
+#if F_CPU >= 20000000
+
+void usb_mtp_update(void)
 {
-	x ^= x >> 1;
-	x ^= x >> 2;
-	x ^= x >> 4;
-	return x & 1;
+	serial_print("test\n");
+
+	// TODO: a lot of work here....
+
+
+
 }
 
-#endif
+
+#endif // F_CPU
+#endif // MTP_INTERFACE
