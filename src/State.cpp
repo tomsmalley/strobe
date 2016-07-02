@@ -26,14 +26,15 @@ void State::printUSBModifiers() {
 
 void State::setUSBSelector(uint8_t keyCode) {
     // Go through selectors array, check for the keyCode
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 6; i++) {
         if (keyboard_keys[i] == keyCode) {
             return;
         }
     }
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 6; i++) {
         // If there is an empty space put the keyCode in
         if (keyboard_keys[i] == 0) {
+            Serial.println("Press");
             keyboard_keys[i] = keyCode;
             return;
         }
@@ -45,6 +46,7 @@ void State::unsetUSBSelector(uint8_t keyCode) {
     for (int i = 0; i < 6; i++) {
         // If the keyCode is there remove it
         if (keyboard_keys[i] == keyCode) {
+            Serial.println("Release");
             keyboard_keys[i] = 0;
             return;
         }

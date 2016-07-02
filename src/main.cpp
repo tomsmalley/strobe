@@ -13,10 +13,12 @@ State* state;
 IntervalTimer usbSend;
 
 
+// Runs as interrupt at specified rate
 void sendUSB() {
     Keyboard.send_now();
     Mouse.move(state->getMouseX(), state->getMouseY());
 }
+
 /**
  * Setup function
  */
@@ -40,7 +42,7 @@ void setup() {
     bool master = true;
     if (master) {
         // Send usb at 500 Hz
-        usbSend.begin(sendUSB,1000);
+        //usbSend.begin(sendUSB,5000);
     }
 
     // DEBUGGING TEMP SETUP TODO
@@ -51,8 +53,10 @@ void setup() {
     Persist::setDeadZone(10);
 
     // Mappings
-    Persist::setMapping(2, 1, 0xA8);
-    Persist::setMapping(2, 0, 0xA9);
+    Persist::setUserID(2, 0, 0);
+    Persist::setUserID(2, 1, 1);
+    Persist::setMapping(0, 1, 0x04);
+    Persist::setMapping(1, 1, 0xA9);
 
 }
 
@@ -126,50 +130,60 @@ void loop() {
         controller->selectReadLine(i);
         for(int j = 0; j < controller->NUM_STROBES; j++) {
 
-            // Get the mapping for this key
-            uint8_t mapping = getMapping(i);
 
             // Read (or attempt to get) the key depth
             if (Persist::matrixPositionActive(i, j)) {
+                uint8_t keyID = Persist::getUserID(i, j);
                 // Read key state, normalise, and store (16 us)
                 uint8_t reading = controller->strobeRead(j);
-                state->keys[i]->depth = Key::normalise(i, j, reading);
-            } else if (master) {
+                state->keys[keyID]->depth = Key::normalise(i, j, reading);
+            }
+
+            /*else if (master) {
                 // If the key isn't in this matrix and this is the master, we can
                 // check the slave. If no slave is connected then the reply is
                 // always 0 which denotes no press
-                state->keys[i]->depth = requestFromSlave(i);
+                state->keys[j]->depth = requestFromSlave(i);
             }
+            */
 
-            // The rest only done on master
-            if (master) {
+        }
+    }
 
-                // Analog handler
-                KeyMap::handle(mapping, state->keys[i]->depth, state);
+    // The rest only done on master
+    if (master) {
+        for (int i = 0; i < state->NUM_KEYS; i++) {
 
-                // Hysteresis for determining if key is pressed
-                // If key was pressed last iteration
-                if (state->keys[i]->pressed) {
-                    // and it has dropped below threshold, set to not pressed
-                    if (state->keys[i]->depth < Persist::getMinThreshold()) {
-                        state->keys[i]->pressed = false;
-                        KeyMap::releaseEvent(mapping, state);
-                    }
-                // Or if it wasn't pressed
-                } else {
-                    // and it has risen above threshold, set to pressed
-                    if (state->keys[i]->depth > Persist::getMaxThreshold()) {
-                        state->keys[i]->pressed = true;
-                        KeyMap::pressEvent(mapping, state);
-                    }
+            // Get the mapping for this key
+            uint8_t mapping = getMapping(i);
+
+            // Analog handler
+            KeyMap::handle(mapping, state->keys[i]->depth, state);
+
+            // Hysteresis for determining if key is pressed
+            // If key was pressed last iteration
+            if (state->keys[i]->pressed) {
+                // and it has dropped below threshold, set to not pressed
+                if (state->keys[i]->depth < Persist::getMinThreshold()) {
+                    state->keys[i]->pressed = false;
+                    KeyMap::releaseEvent(mapping, state);
                 }
-
+            // Or if it wasn't pressed
+            } else {
+                // and it has risen above threshold, set to pressed
+                if (state->keys[i]->depth > Persist::getMaxThreshold()) {
+                    state->keys[i]->pressed = true;
+                    KeyMap::pressEvent(mapping, state);
+                }
             }
 
         }
     }
 
     if (master) {
+        delay(10);
+        Keyboard.send_now();
+        Mouse.move(state->getMouseX(), state->getMouseY());
         state->resetMousePos();
     }
 

@@ -145,24 +145,30 @@ static uint8_t transmit_previous_timeout=0;
 // Move the mouse.  x, y and wheel are -127 to 127.  Use 0 for no movement.
 int usb_mouse_move(int8_t x, int8_t y, int8_t wheel, int8_t horiz)
 {
+        uint32_t wait_count=0;
         usb_packet_t *tx_packet;
 
+        //serial_print("move");
+        //serial_print("\n");
         if (x == -128) x = -127;
         if (y == -128) y = -127;
         if (wheel == -128) wheel = -127;
         if (horiz == -128) horiz = -127;
 
-        if (!usb_configuration) {
-            return -1;
+        while (1) {
+                if (!usb_configuration) {
+                        return -1;
+                }
+                if (usb_tx_packet_count(MOUSE_ENDPOINT) < TX_PACKET_LIMIT) {
+                        tx_packet = usb_malloc();
+                        if (tx_packet) break;
+                }
+                if (++wait_count > TX_TIMEOUT || transmit_previous_timeout) {
+                        transmit_previous_timeout = 1;
+                        return -1;
+                }
+                yield();
         }
-
-        if (usb_tx_packet_count(MOUSE_ENDPOINT) < TX_PACKET_LIMIT) {
-            tx_packet = usb_malloc();
-            if (!tx_packet) return -1;
-        } else {
-            return -1;
-        }
-
         transmit_previous_timeout = 0;
         *(tx_packet->buf + 0) = 1;
         *(tx_packet->buf + 1) = usb_mouse_buttons_state;
