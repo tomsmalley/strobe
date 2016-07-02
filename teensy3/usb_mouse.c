@@ -145,30 +145,24 @@ static uint8_t transmit_previous_timeout=0;
 // Move the mouse.  x, y and wheel are -127 to 127.  Use 0 for no movement.
 int usb_mouse_move(int8_t x, int8_t y, int8_t wheel, int8_t horiz)
 {
-        uint32_t wait_count=0;
         usb_packet_t *tx_packet;
 
-        //serial_print("move");
-        //serial_print("\n");
         if (x == -128) x = -127;
         if (y == -128) y = -127;
         if (wheel == -128) wheel = -127;
         if (horiz == -128) horiz = -127;
 
-        while (1) {
-                if (!usb_configuration) {
-                        return -1;
-                }
-                if (usb_tx_packet_count(MOUSE_ENDPOINT) < TX_PACKET_LIMIT) {
-                        tx_packet = usb_malloc();
-                        if (tx_packet) break;
-                }
-                if (++wait_count > TX_TIMEOUT || transmit_previous_timeout) {
-                        transmit_previous_timeout = 1;
-                        return -1;
-                }
-                yield();
+        if (!usb_configuration) {
+            return -1;
         }
+
+        if (usb_tx_packet_count(MOUSE_ENDPOINT) < TX_PACKET_LIMIT) {
+            tx_packet = usb_malloc();
+            if (!tx_packet) return -1;
+        } else {
+            return -1;
+        }
+
         transmit_previous_timeout = 0;
         *(tx_packet->buf + 0) = 1;
         *(tx_packet->buf + 1) = usb_mouse_buttons_state;
@@ -186,10 +180,10 @@ int usb_mouse_position(uint16_t x, uint16_t y)
         uint32_t wait_count=0, val32;
         usb_packet_t *tx_packet;
 
-	if (x >= usb_mouse_resolution_x) x = usb_mouse_resolution_x - 1;
-	usb_mouse_position_x = x;
-	if (y >= usb_mouse_resolution_y) y = usb_mouse_resolution_y - 1;
-	usb_mouse_position_y = y;
+    if (x >= usb_mouse_resolution_x) x = usb_mouse_resolution_x - 1;
+    usb_mouse_position_x = x;
+    if (y >= usb_mouse_resolution_y) y = usb_mouse_resolution_y - 1;
+    usb_mouse_position_y = y;
 
         while (1) {
                 if (!usb_configuration) {
@@ -205,50 +199,50 @@ int usb_mouse_position(uint16_t x, uint16_t y)
                 }
                 yield();
         }
-	transmit_previous_timeout = 0;
-	*(tx_packet->buf + 0) = 2;
-	val32 = usb_mouse_position_x * usb_mouse_scale_x + usb_mouse_offset_x;
-	 //serial_print("position:");
-	 //serial_phex16(usb_mouse_position_x);
-	 //serial_print("->");
-	 //serial_phex32(val32);
-	*(tx_packet->buf + 1) = val32 >> 16;
-	*(tx_packet->buf + 2) = val32 >> 24;
-	val32 = usb_mouse_position_y * usb_mouse_scale_y + usb_mouse_offset_y;
-	 //serial_print(",");
-	 //serial_phex16(usb_mouse_position_y);
-	 //serial_print("->");
-	 //serial_phex32(val32);
-	 //serial_print("\n");
-	*(tx_packet->buf + 3) = val32 >> 16;
-	*(tx_packet->buf + 4) = val32 >> 24;
-	tx_packet->len = 5;
-	usb_tx(MOUSE_ENDPOINT, tx_packet);
+    transmit_previous_timeout = 0;
+    *(tx_packet->buf + 0) = 2;
+    val32 = usb_mouse_position_x * usb_mouse_scale_x + usb_mouse_offset_x;
+     //serial_print("position:");
+     //serial_phex16(usb_mouse_position_x);
+     //serial_print("->");
+     //serial_phex32(val32);
+    *(tx_packet->buf + 1) = val32 >> 16;
+    *(tx_packet->buf + 2) = val32 >> 24;
+    val32 = usb_mouse_position_y * usb_mouse_scale_y + usb_mouse_offset_y;
+     //serial_print(",");
+     //serial_phex16(usb_mouse_position_y);
+     //serial_print("->");
+     //serial_phex32(val32);
+     //serial_print("\n");
+    *(tx_packet->buf + 3) = val32 >> 16;
+    *(tx_packet->buf + 4) = val32 >> 24;
+    tx_packet->len = 5;
+    usb_tx(MOUSE_ENDPOINT, tx_packet);
         return 0;
 }
 
 void usb_mouse_screen_size(uint16_t width, uint16_t height, uint8_t mac)
 {
-	if (width < 128) width = 128;
-	else if (width > 7680) width = 7680;
-	if (height < 128) height = 128;
-	else if (height > 7680) height = 7680;
-	usb_mouse_resolution_x = width;
-	usb_mouse_resolution_y = height;
-	usb_mouse_position_x = width / 2;
-	usb_mouse_position_y = height / 2;
-	usb_mouse_scale_x = (0x80000000ul + (width >> 1)) / width;
-	usb_mouse_scale_y = (0x80000000ul + (height >> 1)) / height;
-	usb_mouse_offset_x = (usb_mouse_scale_x >> 1) - 1;
-	usb_mouse_offset_y = (usb_mouse_scale_y >> 1) - 1;
-	if (mac) {
-		// ugly workaround for Mac's HID coordinate scaling:
-		// http://lists.apple.com/archives/usb/2011/Jun/msg00032.html
-		usb_mouse_offset_x += 161061273ul;
-		usb_mouse_offset_y += 161061273ul;
-		usb_mouse_scale_x = (1825361101ul + (width >> 1)) / width;
-		usb_mouse_scale_y = (1825361101ul + (height >> 1)) / height;
-	}
+    if (width < 128) width = 128;
+    else if (width > 7680) width = 7680;
+    if (height < 128) height = 128;
+    else if (height > 7680) height = 7680;
+    usb_mouse_resolution_x = width;
+    usb_mouse_resolution_y = height;
+    usb_mouse_position_x = width / 2;
+    usb_mouse_position_y = height / 2;
+    usb_mouse_scale_x = (0x80000000ul + (width >> 1)) / width;
+    usb_mouse_scale_y = (0x80000000ul + (height >> 1)) / height;
+    usb_mouse_offset_x = (usb_mouse_scale_x >> 1) - 1;
+    usb_mouse_offset_y = (usb_mouse_scale_y >> 1) - 1;
+    if (mac) {
+        // ugly workaround for Mac's HID coordinate scaling:
+        // http://lists.apple.com/archives/usb/2011/Jun/msg00032.html
+        usb_mouse_offset_x += 161061273ul;
+        usb_mouse_offset_y += 161061273ul;
+        usb_mouse_scale_x = (1825361101ul + (width >> 1)) / width;
+        usb_mouse_scale_y = (1825361101ul + (height >> 1)) / height;
+    }
 }
 
 
