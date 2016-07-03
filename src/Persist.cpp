@@ -11,7 +11,7 @@ uint8_t Persist::maskKeyID(uint8_t keyID) {
 
 // Mask off bottom 3 bits
 uint8_t Persist::maskLayer(uint8_t layer) {
-    return (layer & 0x07);
+    return layer < NUM_LAYERS ? layer : 0;
 }
 
 /* USER SETTINGS */
@@ -113,12 +113,15 @@ void Persist::setCalMax(uint8_t row, uint8_t col, uint8_t value) {
 
 /* KEYMAP FUNCTIONS */
 
-uint8_t Persist::getMapping(uint8_t keyID, uint8_t layer) {
-    return EEPROM.read(MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
-            maskKeyID(keyID));
+uint16_t Persist::getMapping(uint8_t keyID, uint8_t layer) {
+    uint16_t address = MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
+        2 * maskKeyID(keyID);
+    return (EEPROM.read(address) << 8) | EEPROM.read(address + 1);
 }
 
-void Persist::setMapping(uint8_t keyID, uint8_t layer, uint8_t mapID) {
-    EEPROM.update(MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
-            maskKeyID(keyID), mapID);
+void Persist::setMapping(uint8_t keyID, uint8_t layer, uint16_t mapID) {
+    uint16_t address = MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
+        2 * maskKeyID(keyID);
+    EEPROM.update(address, (mapID >> 8));
+    EEPROM.update(address + 1, mapID);
 }

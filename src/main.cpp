@@ -10,14 +10,6 @@
 #include "MainMenu.h"
 MainMenu* menu;
 State* state;
-IntervalTimer usbSend;
-
-
-// Runs as interrupt at specified rate
-void sendUSB() {
-    Keyboard.send_now();
-    Mouse.move(state->getMouseX(), state->getMouseY());
-}
 
 /**
  * Setup function
@@ -38,12 +30,8 @@ void setup() {
     }
 
 
-    // Determine if we are master
+    // TODO Determine if we are master
     bool master = true;
-    if (master) {
-        // Send usb at 500 Hz
-        //usbSend.begin(sendUSB,5000);
-    }
 
     // DEBUGGING TEMP SETUP TODO
     // Settings
@@ -89,32 +77,26 @@ void loop() {
     // TODO
     bool master = true;
     // If this is the master we also need to do serial interaction stuff
-    /*
     if (Serial.dtr()) {
-        // Print fancy intro
-        Serial.println(ANSI_COLOR_RED);
-        Serial.println("       __           __      ");
-        Serial.println("  ___ / /________  / /  ___ ");
-        Serial.println(" (_-</ __/ __/ _ \\/ _ \\/ -_)");
-        Serial.println("/___/\\__/_/  \\___/_.__/\\__/ ");
-        Serial.println(ANSI_COLOR_RESET);
-        Serial.println("Capacitive sensing keyboard firmware");
-        Serial.println("*** https://github.com/tomsmalley/strobe");
-        Serial.println();
-        // Make sure the message prints fully and isn't waiting for the rest of the
-        // packet
-        Serial.send_now();
-        menu->start();
-    }
-    */
-    /*
-    if (master && Serial.available()) {
-        if (Serial.read() == 'm') {
-            // TODO needs to actually be a menu
-            menu->start();
+        if (Serial.available()) {
+            if (Serial.read() == 'm') {
+                // Print fancy intro
+                Serial.println(ANSI_COLOR_RED);
+                Serial.println("       __           __      ");
+                Serial.println("  ___ / /________  / /  ___ ");
+                Serial.println(" (_-</ __/ __/ _ \\/ _ \\/ -_)");
+                Serial.println("/___/\\__/_/  \\___/_.__/\\__/ ");
+                Serial.println(ANSI_COLOR_RESET);
+                Serial.println("Capacitive sensing keyboard firmware");
+                Serial.println("*** https://github.com/tomsmalley/strobe");
+                Serial.println();
+                // Make sure the message prints fully and isn't waiting for the
+                // rest of the packet
+                Serial.send_now();
+                menu->start();
+            }
         }
     }
-    */
 
     /*
     if (Serial.dtr()) {
@@ -159,7 +141,7 @@ void loop() {
 
             // Analog handler
             KeyMap::handle(mapping, state->keys[i]->depth, state);
-
+            Serial.println(i);
             // Hysteresis for determining if key is pressed
             // If key was pressed last iteration
             if (state->keys[i]->pressed) {
@@ -173,6 +155,7 @@ void loop() {
                 // and it has risen above threshold, set to pressed
                 if (state->keys[i]->depth > Persist::getMaxThreshold()) {
                     state->keys[i]->pressed = true;
+                    KeyMap::releaseEvent(mapping, state);
                     KeyMap::pressEvent(mapping, state);
                 }
             }
@@ -181,7 +164,6 @@ void loop() {
     }
 
     if (master) {
-        delay(10);
         Keyboard.send_now();
         Mouse.move(state->getMouseX(), state->getMouseY());
         state->resetMousePos();

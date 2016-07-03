@@ -41,7 +41,6 @@ void KeyMap::handle(uint8_t mapID, uint8_t depth, State* state) {
 }
 
 void KeyMap::pressEvent(uint8_t mapID, State* state) {
-
     if (mapID <= 0xA4 || (mapID >= 0xB0 && mapID <= 0xDF)) { // Selectors
         state->setUSBSelector(mapID);
     } else if (mapID >= 0xE0 && mapID <= 0xE7) { // Modifiers

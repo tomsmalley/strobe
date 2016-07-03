@@ -3,26 +3,38 @@
 
 #include <cstdint>
 
+// Memory locations
+#define MEM_USER_SETTINGS   0x000
+#define MEM_KEY_MATRIX      0x080
+#define MEM_KEY_CAL_MIN     0x100
+#define MEM_KEY_CAL_MAX     0x180
+#define MEM_KEYMAPS         0x200
+// Keymap block size
+#define BLOCK_SIZE          0x100
+#define NUM_LAYERS          6
+
+// User settings memory offsets
+#define MEM_SETTINGS_DEADZONE_OFFSET        0
+#define MEM_SETTINGS_SENSITIVITY_OFFSET     1
+#define MEM_SETTINGS_MIN_THRESHOLD_OFFSET   2
+#define MEM_SETTINGS_MAX_THRESHOLD_OFFSET   3
+#define MEM_SETTINGS_NOISE_FLOOR_OFFSET     4
+
 /**
  * This class defines how EEPROM is allocated and provides accessor functions.
- * Dividing the 2048 byte EEPROM of the teensy into blocks of 128 bytes, there
+ * Dividing the 2048 byte EEPROM of the mk20 into blocks of 128 bytes, there
  * are 16 blocks. These are allocated as follows:
- * 0 -> User setting
+ *
+ * 0 -> User settings / persistent macros
  * 1 -> Key user ID (addressed by hardware ID)
  * 2 -> Key Cal Min (addressed by hardware ID)
  * 3 -> Key Cal Max (addressed by hardware ID)
  * 4 -> Keymap Layer 0
- * 5 -> Keymap Layer 1
- * 6 -> Keymap Layer 2
- * 7 -> Keymap Layer 3
- * 8 -> Keymap Layer 4
- * 9 -> Keymap Layer 5
- * A -> Keymap Layer 6
- * B -> Keymap Layer 7
- * C -> Not used
- * D -> Not used
- * E -> Not used
- * F -> Not used
+ * 6 -> Keymap Layer 1
+ * 8 -> Keymap Layer 2
+ * A -> Keymap Layer 3
+ * C -> Keymap Layer 4
+ * E -> Keymap Layer 5
  * All key functions are addressed using the key user ID unless specified
  * otherwise.
  */
@@ -51,21 +63,14 @@ class Persist {
         static void setCalMax(uint8_t row, uint8_t col, uint8_t value);
 
         /**
-         * Get mapping for a key on a given layer.
-         * @param keyID key ID
-         * @param layer layer to find
-         * @return mapping
+         * Get/set mapping for a key on a given layer.
          */
-        static uint8_t getMapping(uint8_t keyID, uint8_t layer);
+        static uint16_t getMapping(uint8_t keyID, uint8_t layer);
+        static void setMapping(uint8_t keyID, uint8_t layer, uint16_t mapID);
 
         /**
-         * Set mapping for a key on a given layer.
-         * @param keyID key ID
-         * @param layer layer to set
-         * @param mapID action to set
+         * User settings
          */
-        static void setMapping(uint8_t keyID, uint8_t layer, uint8_t mapID);
-
         static uint8_t getDeadZone();
         static void setDeadZone(uint8_t deadZone);
 
@@ -87,6 +92,7 @@ class Persist {
         static uint8_t maskKeyID(uint8_t keyID);
         static uint8_t maskLayer(uint8_t maskLayer);
 
+        /*
         // Memory locations
         static const int BLOCK_SIZE = 0x80; // In bytes
         static const int MEM_USER_SETTINGS = 0x0 * BLOCK_SIZE;
@@ -101,6 +107,7 @@ class Persist {
         static const int MEM_SETTINGS_MIN_THRESHOLD_OFFSET = 2;
         static const int MEM_SETTINGS_MAX_THRESHOLD_OFFSET = 3;
         static const int MEM_SETTINGS_NOISE_FLOOR_OFFSET = 4;
+        */
 
 };
 
