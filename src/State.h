@@ -12,6 +12,7 @@ class State {
 
         static const int NUM_KEYS = 128;
 
+        // reset USB state array when changing layer or key could get stuck on!
         bool fnPressed = false;
         uint8_t layer = 1;
         Key* keys[NUM_KEYS];

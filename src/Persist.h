@@ -8,7 +8,7 @@
 #define MEM_KEY_MATRIX      0x080
 #define MEM_KEY_CAL_MIN     0x100
 #define MEM_KEY_CAL_MAX     0x180
-#define MEM_KEYMAPS         0x200
+#define MEM_KEY_ADDRESS     0x200
 // Keymap block size
 #define BLOCK_SIZE          0x100
 #define NUM_LAYERS          6
@@ -63,10 +63,12 @@ class Persist {
         static void setCalMax(uint8_t row, uint8_t col, uint8_t value);
 
         /**
-         * Get/set mapping for a key on a given layer.
+         * Get/set action for a key on a given layer.
          */
-        static uint16_t getMapping(uint8_t keyID, uint8_t layer);
-        static void setMapping(uint8_t keyID, uint8_t layer, uint16_t mapID);
+        static uint8_t getRoute(uint8_t keyID, uint8_t layer);
+        static void setRoute(uint8_t keyID, uint8_t layer, uint8_t route);
+        static uint8_t getPayload(uint8_t keyID, uint8_t layer);
+        static void setPayload(uint8_t keyID, uint8_t layer, uint8_t payload);
 
         /**
          * User settings
@@ -86,11 +88,17 @@ class Persist {
         static uint8_t getNoiseFloor();
         static void setNoiseFloor(uint8_t noise);
 
+        static uint8_t getLayerCount();
+        static void setLayerCount(uint8_t layers);
+
     private:
 
         // Helper functions for input sanitization
         static uint8_t maskKeyID(uint8_t keyID);
         static uint8_t maskLayer(uint8_t maskLayer);
+
+        static uint8_t routeShift(uint8_t keyID);
+        static uint8_t routeOffset(uint8_t keyID);
 
         /*
         // Memory locations

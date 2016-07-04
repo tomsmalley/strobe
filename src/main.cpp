@@ -3,13 +3,15 @@
 #include "HardwareController.h"
 #include "Key.h"
 #include "Persist.h"
-#include "KeyMap.h"
+#include "ActionDispatch.h"
 #include "State.h"
 #include "EscapeCodes.h"
 
 #include "MainMenu.h"
+
 MainMenu* menu;
 State* state;
+ActionDispatch* dispatch;
 
 /**
  * Setup function
@@ -43,25 +45,29 @@ void setup() {
     // Mappings
     Persist::setUserID(2, 0, 0);
     Persist::setUserID(2, 1, 1);
-    Persist::setMapping(0, 1, 0x04);
-    Persist::setMapping(1, 1, 0xA9);
+    /*
+    Persist::setAction(0, 1, (1<<8) | 0x03);
+    Persist::setAction(1, 1, (1<<8) | 0x02);
+    */
 
 }
 
-uint8_t getMapping(int8_t keyID) {
-    uint8_t mapping;
-    // Get the mapping for the fn layer or current layer
+/*
+uint16_t getAction(int8_t keyID) {
+    uint16_t action;
+    // Get the action for the fn layer or current layer
     if (state->fnPressed) {
-        mapping = Persist::getMapping(keyID, 0);
+        action = Persist::getAction(keyID, 0);
     } else {
-        mapping = Persist::getMapping(keyID, state->layer);
+        action = Persist::getAction(keyID, state->layer);
     }
     // Fallback to default layer if there is no function declared
-    if (mapping == 0) {
-        mapping = Persist::getMapping(keyID, 1);
+    if (action == 0) {
+        action = Persist::getAction(keyID, 1);
     }
-    return mapping;
+    return action;
 }
+*/
 
 /**
  * TODO when 2nd teensy arrives
@@ -136,36 +142,40 @@ void loop() {
     if (master) {
         for (int i = 0; i < state->NUM_KEYS; i++) {
 
-            // Get the mapping for this key
-            uint8_t mapping = getMapping(i);
+            // Get the action for this key
+            // TODO layers
+            uint8_t route   = Persist::getRoute(i, 0);
+            uint8_t payload = Persist::getPayload(i, 0);
 
-            // Analog handler
-            KeyMap::handle(mapping, state->keys[i]->depth, state);
-            Serial.println(i);
+
             // Hysteresis for determining if key is pressed
+            bool up = false, down = false;
             // If key was pressed last iteration
             if (state->keys[i]->pressed) {
                 // and it has dropped below threshold, set to not pressed
                 if (state->keys[i]->depth < Persist::getMinThreshold()) {
                     state->keys[i]->pressed = false;
-                    KeyMap::releaseEvent(mapping, state);
+                    up = true;
                 }
             // Or if it wasn't pressed
             } else {
                 // and it has risen above threshold, set to pressed
                 if (state->keys[i]->depth > Persist::getMaxThreshold()) {
                     state->keys[i]->pressed = true;
-                    KeyMap::releaseEvent(mapping, state);
-                    KeyMap::pressEvent(mapping, state);
+                    down = true;
                 }
             }
+            dispatch->handle(route, payload, state->keys[i]->depth, up,
+                    down);
 
         }
-    }
 
-    if (master) {
+        dispatch->updateState();
+
         Keyboard.send_now();
         Mouse.move(state->getMouseX(), state->getMouseY());
+        Joystick.X(state->getMouseX());
+        Joystick.send_now();
         state->resetMousePos();
     }
 

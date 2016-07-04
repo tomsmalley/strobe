@@ -27,7 +27,7 @@ void KeyMapSetup::printValues() {
             Serial.printf("| %3u |", i);
             // Go through layers
             for (int layer = 0; layer < 8; layer++) {
-                Serial.printf(" %02X |", Persist::getMapping(i, layer));
+                Serial.printf(" %02X |", Persist::getAction(i, layer));
             }
             Serial.println();
         }
@@ -39,6 +39,7 @@ void KeyMapSetup::printValues() {
 
 // TODO this function is lazily implemented, needs rewriting
 void KeyMapSetup::setKeyMap() {
+    /*
     Serial.println();
     Serial.println("Setting up the matrix. Send 'q' when done.");
 
@@ -52,7 +53,7 @@ void KeyMapSetup::setKeyMap() {
         // Layers
         for (int l = 0; l < 8; l++) {
             // Print current mapping
-            Serial.printf("%02X-", Persist::getMapping(i, l));
+            Serial.printf("%02X-", Persist::getAction(i, l));
             bool firstSet = false;
             bool secondSet = false;
             uint8_t first;
@@ -86,22 +87,25 @@ void KeyMapSetup::setKeyMap() {
             }
             if (firstSet && secondSet) {
                 uint8_t mapping = (first << 4) + second;
-                Persist::setMapping(i, l, mapping);
+                Persist::setAction(i, l, mapping);
             }
             // Print final mapping
-            Serial.printf("%02X|", Persist::getMapping(i, l));
+            Serial.printf("%02X|", Persist::getAction(i, l));
         }
         Serial.println();
     }
     Serial.println("+-----+-----+-----+-----+-----+-----+-----+-----+-----+");
+    */
 }
 
 void KeyMapSetup::resetValues() {
+    /*
     // Reset all keys
     for (int i = 0; i < State::NUM_KEYS; i++) {
         for (int l = 0; l < 8; l++) {
-            Persist::setMapping(i, l, 0);
+            Persist::setAction(i, l, 0);
         }
     }
     Serial.println("Memory reset.");
+    */
 }

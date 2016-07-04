@@ -1,5 +1,7 @@
 #include "Persist.h"
 
+#include <WProgram.h>
+
 #include <EEPROM.h>
 
 /* PRIVATE HELPER FUNCTIONS */
@@ -111,17 +113,53 @@ void Persist::setCalMax(uint8_t row, uint8_t col, uint8_t value) {
     EEPROM.update(MEM_KEY_CAL_MAX + getHardwareID(row, col), value);
 }
 
-/* KEYMAP FUNCTIONS */
+/* KEY ACTIONS */
 
-uint16_t Persist::getMapping(uint8_t keyID, uint8_t layer) {
-    uint16_t address = MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
-        2 * maskKeyID(keyID);
-    return (EEPROM.read(address) << 8) | EEPROM.read(address + 1);
+// TODO
+uint8_t Persist::getLayerCount() {
+    return 0;
+}
+void Persist::setLayerCount(uint8_t layers) {
 }
 
-void Persist::setMapping(uint8_t keyID, uint8_t layer, uint16_t mapID) {
-    uint16_t address = MEM_KEYMAPS + BLOCK_SIZE * maskLayer(layer) +
-        2 * maskKeyID(keyID);
-    EEPROM.update(address, (mapID >> 8));
-    EEPROM.update(address + 1, mapID);
+#define NUM_KEYS 70
+#define NUM_LAYERS_MAX 16
+
+uint8_t Persist::getPayload(uint8_t keyID, uint8_t layer) {
+    uint16_t address = MEM_KEY_ADDRESS + maskLayer(layer) * NUM_KEYS
+        + maskKeyID(keyID);
+    return EEPROM.read(address);
+}
+void Persist::setPayload(uint8_t keyID, uint8_t layer, uint8_t payload) {
+    uint16_t address = MEM_KEY_ADDRESS + maskLayer(layer) * NUM_KEYS
+        + maskKeyID(keyID);
+    EEPROM.update(address, payload);
+}
+
+#define ROUTE_BITS 2
+#define ROUTE_PER_BYTE 8/ROUTE_BITS
+
+uint8_t Persist::routeOffset(uint8_t keyID) {
+    return keyID * ROUTE_BITS / 8;
+}
+uint8_t Persist::routeShift(uint8_t keyID) {
+    return (keyID % (8/ROUTE_BITS)) * ROUTE_BITS;
+}
+
+uint8_t Persist::getRoute(uint8_t keyID, uint8_t layer) {
+    uint16_t address = MEM_KEY_ADDRESS + getLayerCount() * NUM_KEYS + routeOffset(keyID);
+    // Bit shift to lowest two bits and mask
+    return (EEPROM.read(address) >> (6 - routeShift(keyID))) & 0b11;
+}
+
+void Persist::setRoute(uint8_t keyID, uint8_t layer, uint8_t route) {
+    uint16_t address = MEM_KEY_ADDRESS + getLayerCount() * NUM_KEYS + routeOffset(keyID);
+    // Number of bits to shift by
+    uint8_t shift = 6 - routeShift(keyID);
+    // Clear bits of interest in the byte block
+    uint8_t old = EEPROM.read(address) & ~((0b11) << shift);
+    // Mask and shift the route into position
+    uint8_t set = ((route & 0b11) << shift);
+    // Set the new byte value
+    EEPROM.update(address, old | set);
 }
