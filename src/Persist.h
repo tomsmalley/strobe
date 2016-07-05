@@ -3,22 +3,6 @@
 
 #include <cstdint>
 
-// Memory locations
-#define MEM_USER_SETTINGS   0x000
-#define MEM_KEY_MATRIX      0x080
-#define MEM_KEY_CAL_MIN     0x100
-#define MEM_KEY_CAL_MAX     0x180
-#define MEM_KEY_ADDRESS     0x200
-// Keymap block size
-#define BLOCK_SIZE          0x100
-#define NUM_LAYERS          6
-
-// User settings memory offsets
-#define MEM_SETTINGS_DEADZONE_OFFSET        0
-#define MEM_SETTINGS_SENSITIVITY_OFFSET     1
-#define MEM_SETTINGS_MIN_THRESHOLD_OFFSET   2
-#define MEM_SETTINGS_MAX_THRESHOLD_OFFSET   3
-#define MEM_SETTINGS_NOISE_FLOOR_OFFSET     4
 
 /**
  * This class defines how EEPROM is allocated and provides accessor functions.

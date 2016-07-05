@@ -4,6 +4,21 @@
 
 #include <EEPROM.h>
 
+// Memory locations
+#define MEM_USER_SETTINGS   0x000
+#define MEM_KEY_MATRIX      0x080
+#define MEM_KEY_CAL_MIN     0x100
+#define MEM_KEY_CAL_MAX     0x180
+#define MEM_KEY_ADDRESS     0x200
+
+// User settings memory offsets
+#define MEM_SETTINGS_DEADZONE_OFFSET        0
+#define MEM_SETTINGS_SENSITIVITY_OFFSET     1
+#define MEM_SETTINGS_MIN_THRESHOLD_OFFSET   2
+#define MEM_SETTINGS_MAX_THRESHOLD_OFFSET   3
+#define MEM_SETTINGS_NOISE_FLOOR_OFFSET     4
+#define MEM_LAYER_COUNT_OFFSET              5
+
 /* PRIVATE HELPER FUNCTIONS */
 
 // Mask off bottom 7 bits
@@ -13,10 +28,18 @@ uint8_t Persist::maskKeyID(uint8_t keyID) {
 
 // Mask off bottom 3 bits
 uint8_t Persist::maskLayer(uint8_t layer) {
-    return layer < NUM_LAYERS ? layer : 0;
+    return layer < getLayerCount() ? layer : 0;
 }
 
 /* USER SETTINGS */
+
+uint8_t Persist::getLayerCount() {
+    return EEPROM.read(MEM_USER_SETTINGS + MEM_LAYER_COUNT_OFFSET);
+}
+void Persist::setLayerCount(uint8_t layers) {
+    EEPROM.update(MEM_USER_SETTINGS + MEM_LAYER_COUNT_OFFSET, layers);
+}
+
 
 uint8_t Persist::getDeadZone() {
     return EEPROM.read(MEM_USER_SETTINGS + MEM_SETTINGS_DEADZONE_OFFSET);
@@ -114,13 +137,6 @@ void Persist::setCalMax(uint8_t row, uint8_t col, uint8_t value) {
 }
 
 /* KEY ACTIONS */
-
-// TODO
-uint8_t Persist::getLayerCount() {
-    return 0;
-}
-void Persist::setLayerCount(uint8_t layers) {
-}
 
 #define NUM_KEYS 70
 #define NUM_LAYERS_MAX 16

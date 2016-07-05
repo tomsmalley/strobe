@@ -44,16 +44,16 @@ void setup() {
     Persist::setDeadZone(10);
 
     // Mappings
+    Persist::setLayerCount(6);
+
     Persist::setUserID(2, 0, 0);
     Persist::setUserID(2, 1, 1);
 
-    /*
     Persist::setRoute(0, 0, 1);
-    Persist::setRoute(1, 0, 1);
-    */
+    Persist::setRoute(1, 0, 2);
 
     Persist::setPayload(0, 0, 0x04);
-    Persist::setPayload(1, 0, 0x05);
+    Persist::setPayload(1, 0, 0xE1);
 
 }
 
@@ -174,8 +174,7 @@ void loop() {
                         down = true;
                     }
                 }
-                //dispatch->handle(route, payload, state->keys[i]->depth, up,
-                dispatch->handle(2, payload, state->keys[i]->depth, up,
+                dispatch->handle(route, payload, state->keys[i]->depth, up,
                         down);
             }
 
