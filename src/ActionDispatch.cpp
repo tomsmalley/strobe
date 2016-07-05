@@ -4,7 +4,6 @@
 
 #include "State.h"
 #include "Persist.h"
-#include "actions/MouseActions.h"
 
 #define ROUTE_ANALOG    0
 #define ROUTE_MOMENTARY 1
@@ -16,6 +15,11 @@
 #define TOGGLE 2
 
 ActionDispatch::ActionDispatch() {
+    for (int i = 0; i < SCHEDULE_LENGTH; i++) {
+        schedulePayload[i] = 0;
+        scheduleOperation[i] = 0;
+        scheduleTime[i] = 0;
+    }
 }
 
 void ActionDispatch::handle(uint8_t route, uint8_t payload, uint8_t depth = 0,
@@ -43,13 +47,24 @@ void ActionDispatch::handle(uint8_t route, uint8_t payload, uint8_t depth = 0,
 }
 
 void ActionDispatch::analogHandle(uint8_t payload, uint8_t depth) {
+    if (payload <= 0x0F) {
+        mouseState.updateAnalog(payload, depth);
+    } else if (payload >= 0x20 && payload <= 0x2F) {
+        joystickState.updateAnalog(payload, depth);
+    }
 }
 
 void ActionDispatch::schedule(uint8_t payload, uint8_t operation, uint16_t time) {
+    Serial.print("Scheduling: ");
+    Serial.print(payload);
+    Serial.print(" operation: ");
+    Serial.println(operation);
     uint16_t longestTime = 0;
     uint8_t longestID = 0;
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
         if (schedulePayload[i] == 0) {
+            Serial.print("Scheduled at: ");
+            Serial.println(i);
             schedulePayload[i] = payload;
             scheduleOperation[i] = operation;
             scheduleTime[i] = time;
@@ -76,7 +91,12 @@ void ActionDispatch::updateState() {
     uint16_t timeStep = sinceLastUpdate;
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
         if (schedulePayload[i] != 0) {
+            Serial.print("Found payload: ");
+            Serial.print(schedulePayload[i]);
+            Serial.print(" at: ");
+            Serial.println(i);
             if (scheduleTime[i] <= timeStep) {
+                Serial.println("Dispatching...");
                 dispatchPayload(schedulePayload[i], scheduleOperation[i]);
                 schedulePayload[i] = 0;
             } else {
@@ -84,6 +104,11 @@ void ActionDispatch::updateState() {
             }
         }
     }
+    keyboardState.send();
+    //mouseState.send();
+    //joystickState.send();
+    mouseState.resetAnalog();
+    joystickState.resetAnalog();
     sinceLastUpdate = elapsedMillis();
 }
 
@@ -93,10 +118,8 @@ void ActionDispatch::specialHandle(uint8_t address, uint8_t depth) {
 }
 
 void ActionDispatch::dispatchPayload(uint8_t payload, uint8_t operation) {
-    if (payload <= 0xA4) { // Selectors
-        keyboardState.execute(payload, operation);
-    } else if (payload >= 0xE0 && payload <= 0xE7) { // Modifiers
-        keyboardState.execute(payload, operation);
+    if ((payload <= 0xA4) || (payload >= 0xE0 && payload <= 0xE7)) {
+        keyboardState.update(payload, operation);
     } else if (payload >= 0xD0 && payload <= 0xDF) { // Toggle layer
         // Change the layer (0xE8 is 0, 0xEF is 7)
         uint8_t layer = payload - 0xD0;
@@ -112,9 +135,9 @@ void ActionDispatch::dispatchPayload(uint8_t payload, uint8_t operation) {
         // functions for a single key for each layer (eg: layer 1 function is
         // to go to layer 2, layer 2 function is to go to layer 3... etc).
     } else if (payload >= 0xB0 && payload <= 0xCF) { // Joystick keys
-        joystickState.execute(payload - 0xB0, operation);
+        joystickState.update(payload - 0xB0, operation);
     } else if (payload >= 0xA5 && payload <= 0xAA) { // Mouse buttons
-        mouseState.execute(payload - 0xA5, operation);
+        mouseState.update(payload - 0xA5, operation);
     } else if (payload == 0xFF) { // Keyboard lock
         // 0xFF keyboard lock
     }

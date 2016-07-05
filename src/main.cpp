@@ -20,6 +20,7 @@ void setup() {
 
     state = new State();
     menu = new MainMenu();
+    dispatch = new ActionDispatch();
 
     Serial.begin(0);
 
@@ -45,10 +46,14 @@ void setup() {
     // Mappings
     Persist::setUserID(2, 0, 0);
     Persist::setUserID(2, 1, 1);
+
     /*
-    Persist::setAction(0, 1, (1<<8) | 0x03);
-    Persist::setAction(1, 1, (1<<8) | 0x02);
+    Persist::setRoute(0, 0, 1);
+    Persist::setRoute(1, 0, 1);
     */
+
+    Persist::setPayload(0, 0, 0x04);
+    Persist::setPayload(1, 0, 0x05);
 
 }
 
@@ -122,6 +127,7 @@ void loop() {
             // Read (or attempt to get) the key depth
             if (Persist::matrixPositionActive(i, j)) {
                 uint8_t keyID = Persist::getUserID(i, j);
+                if (keyID > state->NUM_KEYS - 1) break;
                 // Read key state, normalise, and store (16 us)
                 uint8_t reading = controller->strobeRead(j);
                 state->keys[keyID]->depth = Key::normalise(i, j, reading);
@@ -147,36 +153,35 @@ void loop() {
             uint8_t route   = Persist::getRoute(i, 0);
             uint8_t payload = Persist::getPayload(i, 0);
 
-
-            // Hysteresis for determining if key is pressed
-            bool up = false, down = false;
-            // If key was pressed last iteration
-            if (state->keys[i]->pressed) {
-                // and it has dropped below threshold, set to not pressed
-                if (state->keys[i]->depth < Persist::getMinThreshold()) {
-                    state->keys[i]->pressed = false;
-                    up = true;
+            if (payload != 0 && (i == 0 || i == 1)) {
+                // Hysteresis for determining if key is pressed
+                bool up = false, down = false;
+                // If key was pressed last iteration
+                if (state->keys[i]->pressed) {
+                    // and it has dropped below threshold, set to not pressed
+                    if (state->keys[i]->depth < Persist::getMinThreshold()) {
+                        state->keys[i]->pressed = false;
+                        Serial.println("Release event");
+                        up = true;
+                    }
+                // Or if it wasn't pressed
+                } else {
+                    // and it has risen above threshold, set to pressed
+                    if (state->keys[i]->depth > Persist::getMaxThreshold()) {
+                        state->keys[i]->pressed = true;
+                        Serial.println("Press event");
+                        up = true;
+                        down = true;
+                    }
                 }
-            // Or if it wasn't pressed
-            } else {
-                // and it has risen above threshold, set to pressed
-                if (state->keys[i]->depth > Persist::getMaxThreshold()) {
-                    state->keys[i]->pressed = true;
-                    down = true;
-                }
+                //dispatch->handle(route, payload, state->keys[i]->depth, up,
+                dispatch->handle(2, payload, state->keys[i]->depth, up,
+                        down);
             }
-            dispatch->handle(route, payload, state->keys[i]->depth, up,
-                    down);
 
         }
 
         dispatch->updateState();
-
-        Keyboard.send_now();
-        Mouse.move(state->getMouseX(), state->getMouseY());
-        Joystick.X(state->getMouseX());
-        Joystick.send_now();
-        state->resetMousePos();
     }
 
 }
