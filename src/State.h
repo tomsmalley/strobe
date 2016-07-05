@@ -3,44 +3,42 @@
 
 #include <cstdint>
 
+#include <WProgram.h>
+
+#include "state/KeyboardState.h"
+#include "state/MouseState.h"
+#include "state/JoystickState.h"
+#include "state/LayerState.h"
+
+#define SCHEDULE_LENGTH 128
+
 class Key;
 
 class State {
 
     public:
         State();
-
         static const int NUM_KEYS = 128;
-
-        // reset USB state array when changing layer or key could get stuck on!
-        bool fnPressed = false;
-        uint8_t layer = 1;
         Key* keys[NUM_KEYS];
-
-        // static?? move to different class
-        void setUSBSelector(uint8_t keyCode);
-        void unsetUSBSelector(uint8_t keyCode);
-        void setUSBModifier(uint8_t keyCode);
-        void unsetUSBModifier(uint8_t keyCode);
-        void unsetAllUSBKeys();
-        void printUSBSelectors();
-        void printUSBModifiers();
-
-        //
-        void moveMouseUp(uint8_t depth);
-        void moveMouseRight(uint8_t depth);
-        void moveMouseDown(uint8_t depth);
-        void moveMouseLeft(uint8_t depth);
-
-        int8_t getMouseX();
-        int8_t getMouseY();
-        void resetMousePos();
+        void handle(uint8_t route, uint8_t payload, uint8_t depth, bool up, bool down);
+        void updateState();
 
     private:
+        uint8_t schedulePayload[SCHEDULE_LENGTH];
+        uint16_t scheduleTime[SCHEDULE_LENGTH];
+        uint8_t scheduleOperation[SCHEDULE_LENGTH];
 
-        uint8_t mouseVel(uint8_t value);
-        int8_t mouseX = 0;
-        int8_t mouseY = 0;
+        elapsedMillis sinceLastUpdate;
+
+        KeyboardState keyboardState;
+        MouseState mouseState;
+        JoystickState joystickState;
+        LayerState layerState;
+
+        void analogHandle(uint8_t payload, uint8_t depth);
+        void dispatchPayload(uint8_t payload, uint8_t operation);
+        void schedule(uint8_t payload, uint8_t operation, uint16_t time);
+        void specialHandle(uint8_t address, uint8_t depth);
 
 };
 

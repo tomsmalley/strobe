@@ -26,8 +26,9 @@ uint8_t Persist::maskKeyID(uint8_t keyID) {
     return (keyID & 0x7F);
 }
 
-// Mask off bottom 3 bits
+// Make sure layer is reachable
 uint8_t Persist::maskLayer(uint8_t layer) {
+    // Fall back to layer 0 if attempting to access non existing layer
     return layer < getLayerCount() ? layer : 0;
 }
 
@@ -36,6 +37,8 @@ uint8_t Persist::maskLayer(uint8_t layer) {
 uint8_t Persist::getLayerCount() {
     return EEPROM.read(MEM_USER_SETTINGS + MEM_LAYER_COUNT_OFFSET);
 }
+// TODO make sure the user can't set too many layers!
+// Also needs to allocate memory
 void Persist::setLayerCount(uint8_t layers) {
     EEPROM.update(MEM_USER_SETTINGS + MEM_LAYER_COUNT_OFFSET, layers);
 }

@@ -3,7 +3,6 @@
 #include "HardwareController.h"
 #include "Key.h"
 #include "Persist.h"
-#include "ActionDispatch.h"
 #include "State.h"
 #include "EscapeCodes.h"
 
@@ -11,7 +10,6 @@
 
 MainMenu* menu;
 State* state;
-ActionDispatch* dispatch;
 
 /**
  * Setup function
@@ -20,7 +18,7 @@ void setup() {
 
     state = new State();
     menu = new MainMenu();
-    dispatch = new ActionDispatch();
+    state = new State();
 
     Serial.begin(0);
 
@@ -174,13 +172,13 @@ void loop() {
                         down = true;
                     }
                 }
-                dispatch->handle(route, payload, state->keys[i]->depth, up,
+                state->handle(route, payload, state->keys[i]->depth, up,
                         down);
             }
 
         }
 
-        dispatch->updateState();
+        state->updateState();
     }
 
 }
