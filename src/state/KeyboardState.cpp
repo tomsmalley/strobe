@@ -64,6 +64,13 @@ void KeyboardState::toggleModifier(uint8_t keyCode) {
     modifiers ^= 1 << (keyCode - 0xE0);
 }
 
+void KeyboardState::initState() {
+    modifiers = 0;
+    for (int i = 0; i < 6; i++) {
+        selectors[i] = 0;
+    }
+}
+
 #define SET 0
 #define UNSET 1
 #define TOGGLE 2

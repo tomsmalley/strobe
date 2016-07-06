@@ -24,8 +24,7 @@ void LayerState::toggleLayer(uint8_t layer) {
 #define UNSET 1
 #define TOGGLE 2
 
-void LayerState::update(uint8_t payload, uint8_t operation) {
-    uint8_t layer = payload - 0xD0;
+void LayerState::update(uint8_t layer, uint8_t operation) {
     if (layer > MAX_LAYERS) return; // Do nothing if invalid
     if (layer == 0) {
         layers = 1; // Reset layers

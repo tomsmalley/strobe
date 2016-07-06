@@ -15,6 +15,11 @@ void MouseState::resetAnalog() {
     scrollY = 0;
 }
 
+void MouseState::initState() {
+    resetAnalog();
+    buttons = 0;
+}
+
 // Mouse key defs
 #define CURSOR_UP           0x00
 #define CURSOR_DOWN         0x01

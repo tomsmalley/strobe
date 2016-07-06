@@ -47,30 +47,23 @@ void setup() {
     Persist::setUserID(2, 0, 0);
     Persist::setUserID(2, 1, 1);
 
+    // button 0
     Persist::setRoute(0, 0, 1);
-    Persist::setRoute(1, 0, 2);
-
     Persist::setPayload(0, 0, 0x04);
-    Persist::setPayload(1, 0, 0xE1);
+    Persist::setRoute(0, 1, 1);
+    Persist::setPayload(0, 1, 0x05);
+    Persist::setRoute(0, 2, 1);
+    Persist::setPayload(0, 2, 0x06);
+
+    // button 1
+    Persist::setRoute(1, 0, 2);
+    Persist::setPayload(1, 0, 0xD1); // toggle L1
+    Persist::setRoute(1, 1, 2);
+    Persist::setPayload(1, 1, 0xD2); // toggle L2
+    Persist::setRoute(1, 2, 2);
+    Persist::setPayload(1, 2, 0xD0); // reset layer
 
 }
-
-/*
-uint16_t getAction(int8_t keyID) {
-    uint16_t action;
-    // Get the action for the fn layer or current layer
-    if (state->fnPressed) {
-        action = Persist::getAction(keyID, 0);
-    } else {
-        action = Persist::getAction(keyID, state->layer);
-    }
-    // Fallback to default layer if there is no function declared
-    if (action == 0) {
-        action = Persist::getAction(keyID, 1);
-    }
-    return action;
-}
-*/
 
 /**
  * TODO when 2nd teensy arrives

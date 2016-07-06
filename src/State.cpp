@@ -164,8 +164,9 @@ void State::dispatchPayload(uint8_t payload, uint8_t operation) {
     } else if (payload >= 0xD0 && payload <= 0xDF) { // Toggle layer
         layerState.update(payload - 0xD0, operation);
         // All keys need to be unset so they don't get stuck on
-        // TODO do this in changeLayer function?
-        //state->unsetAllUSBKeys();
+        keyboardState.initState();
+        joystickState.initState();
+        mouseState.initState();
         // increment decrement can be set up through setting different
         // functions for a single key for each layer (eg: layer 1 function is
         // to go to layer 2, layer 2 function is to go to layer 3... etc).

@@ -10,6 +10,7 @@ class MouseState: public BiState {
         void updateAnalog(uint8_t payload, uint8_t depth);
         void send();
         void resetAnalog();
+        void initState();
 
     private:
         uint8_t transmitPreviousTimeout = 0;

@@ -7,6 +7,7 @@ class KeyboardState: public BiState {
 
     public:
         virtual void update(uint8_t payload, uint8_t operation);
+        void initState();
         void send();
 
     private:
