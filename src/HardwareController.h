@@ -24,6 +24,7 @@ class HardwareController {
         // Matrix definitions, public for loop limits
         static const uint8_t NUM_STROBES = 6;
         static const uint8_t NUM_READS = 7;
+        static const uint8_t NUM_KEYS = 2;
 
 
         /*** Reading functions ***/

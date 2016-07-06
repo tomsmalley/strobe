@@ -9,6 +9,7 @@
 #include "state/MouseState.h"
 #include "state/JoystickState.h"
 #include "state/LayerState.h"
+#include "HardwareController.h"
 
 #define SCHEDULE_LENGTH 128
 
@@ -20,8 +21,7 @@ class State {
 
     public:
         State();
-        static const int NUM_KEYS = 128;
-        Key* keys[NUM_KEYS];
+        Key* keys[HardwareController::NUM_KEYS];
         void handle(Route route, uint8_t payload, uint8_t depth, bool up, bool down);
         void updateState();
 

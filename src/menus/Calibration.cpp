@@ -21,7 +21,7 @@ void Calibration::printValues() {
 
     Serial.println();
     Serial.println("Calibration data");
-    uint8_t noise = Persist::getNoiseFloor();
+    uint8_t noise = Persist::getSetting(Setting::NOISE_FLOOR);
     Serial.print("Noise floor: ");
     Serial.println(noise);
     Serial.println("Per-key data:");
@@ -210,11 +210,11 @@ void Calibration::fullRoutine(bool autoDetect) {
     }
     Serial.printf("Saving noise floor (%u) to memory...", maxNoise);
     Serial.println();
-    Persist::setNoiseFloor(maxNoise);
+    Persist::setSetting(Setting::NOISE_FLOOR, maxNoise);
 
     // Calibration
     Serial.println();
-    uint8_t noiseFloor = Persist::getNoiseFloor();
+    uint8_t noiseFloor = Persist::getSetting(Setting::NOISE_FLOOR);
     for (int i = 0; i < controller->NUM_READS; i++) {
         for(int j = 0; j < controller->NUM_STROBES; j++) {
             // Only show ones set in this matrix

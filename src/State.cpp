@@ -6,7 +6,7 @@
 #include "Key.h"
 
 State::State() {
-    for (int i = 0; i < NUM_KEYS; i++) {
+    for (int i = 0; i < HardwareController::NUM_KEYS; i++) {
         keys[i] = new Key();
     }
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
@@ -75,11 +75,11 @@ void State::schedule(uint8_t payload, Operation operation, uint16_t time) {
 }
 
 void State::scanKeys() {
-    for (int i = 0; i < NUM_KEYS; i++) {
+    for (int i = 0; i < HardwareController::NUM_KEYS; i++) {
         Route route;
         uint8_t payload = 0;
         // Get the key action based on active layers
-        for (int l = Persist::getLayerCount() - 1; l >= 0; l--) {
+        for (int l = Persist::getSetting(Setting::LAYER_COUNT) - 1; l >= 0; l--) {
             if (layerState.isActive(l)) {
                 route = Persist::getRoute(i, l);
                 payload = Persist::getPayload(i, l);
@@ -92,14 +92,14 @@ void State::scanKeys() {
             // If key was pressed last iteration
             if (keys[i]->pressed) {
                 // and it has dropped below threshold, set to not pressed
-                if (keys[i]->depth < Persist::getMinThreshold()) {
+                if (keys[i]->depth < Persist::getSetting(Setting::MIN_THRESHOLD)) {
                     keys[i]->pressed = false;
                     up = true;
                 }
             // or if it wasn't pressed
             } else {
                 // and it has risen above threshold, set to pressed
-                if (keys[i]->depth > Persist::getMaxThreshold()) {
+                if (keys[i]->depth > Persist::getSetting(Setting::MAX_THRESHOLD)) {
                     keys[i]->pressed = true;
                     down = true;
                 }

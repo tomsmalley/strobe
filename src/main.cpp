@@ -38,15 +38,16 @@ void setup() {
 
     // DEBUGGING TEMP SETUP TODO
     // Settings
-    Persist::setMinThreshold(127);
-    Persist::setMaxThreshold(153);
-    Persist::setSensitivity(20);
-    Persist::setDeadZone(10);
+    Persist::setSetting(Setting::MIN_THRESHOLD, 127);
+    Persist::setSetting(Setting::MAX_THRESHOLD, 153);
+    Persist::setSetting(Setting::SENSITIVITY, 20);
+    Persist::setSetting(Setting::DEADZONE, 10);
+    Persist::setSetting(Setting::LAYER_COUNT, 6);
 
-    // Mappings
-    Persist::setLayerCount(6);
-
+    // User ID
+    Persist::setMatrixPositionActive(2, 0, true);
     Persist::setUserID(2, 0, 0);
+    Persist::setMatrixPositionActive(2, 1, true);
     Persist::setUserID(2, 1, 1);
 
     // button 0
@@ -120,8 +121,7 @@ void loop() {
             // Read (or attempt to get) the key depth
             if (Persist::matrixPositionActive(i, j)) {
                 uint8_t keyID = Persist::getUserID(i, j);
-                if (keyID > state->NUM_KEYS - 1) break;
-                // Read key state, normalise, and store (16 us)
+                if (keyID > HardwareController::NUM_KEYS - 1) break;
                 uint8_t reading = controller->strobeRead(j);
                 state->keys[keyID]->depth = Key::normalise(i, j, reading);
             }

@@ -72,8 +72,8 @@ void MouseState::update(uint8_t payload, Operation operation) {
 }
 
 uint8_t MouseState::mouseVel(uint8_t value) {
-    const uint16_t DEADZONE = Persist::getDeadZone();
-    const uint16_t SENSITIVITY = Persist::getSensitivity();
+    const uint16_t DEADZONE = Persist::getSetting(Setting::DEADZONE);
+    const uint16_t SENSITIVITY = Persist::getSetting(Setting::SENSITIVITY);
     if (value < DEADZONE) value = DEADZONE;
     uint16_t numerator = SENSITIVITY * (value - DEADZONE);
     uint8_t denominator = 255 - DEADZONE;
