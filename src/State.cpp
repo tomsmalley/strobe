@@ -5,15 +5,6 @@
 #include "Persist.h"
 #include "Key.h"
 
-#define ROUTE_ANALOG    0
-#define ROUTE_MOMENTARY 1
-#define ROUTE_TOGGLE    2
-#define ROUTE_SPECIAL   3
-
-#define SET 0
-#define UNSET 1
-#define TOGGLE 2
-
 State::State() {
     for (int i = 0; i < NUM_KEYS; i++) {
         keys[i] = new Key();
@@ -125,7 +116,6 @@ void State::scanKeys() {
         }
     }
 }
-
 
 void State::updateState() {
     scanKeys();

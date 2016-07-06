@@ -10,6 +10,8 @@
 #include "state/JoystickState.h"
 #include "state/LayerState.h"
 
+#include "Actions.h"
+
 #define SCHEDULE_LENGTH 128
 
 class Key;
