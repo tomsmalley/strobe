@@ -144,40 +144,6 @@ void loop() {
 
     // The rest only done on master
     if (master) {
-        for (int i = 0; i < state->NUM_KEYS; i++) {
-
-            // Get the action for this key
-            // TODO layers
-            uint8_t route   = Persist::getRoute(i, 0);
-            uint8_t payload = Persist::getPayload(i, 0);
-
-            if (payload != 0 && (i == 0 || i == 1)) {
-                // Hysteresis for determining if key is pressed
-                bool up = false, down = false;
-                // If key was pressed last iteration
-                if (state->keys[i]->pressed) {
-                    // and it has dropped below threshold, set to not pressed
-                    if (state->keys[i]->depth < Persist::getMinThreshold()) {
-                        state->keys[i]->pressed = false;
-                        Serial.println("Release event");
-                        up = true;
-                    }
-                // Or if it wasn't pressed
-                } else {
-                    // and it has risen above threshold, set to pressed
-                    if (state->keys[i]->depth > Persist::getMaxThreshold()) {
-                        state->keys[i]->pressed = true;
-                        Serial.println("Press event");
-                        up = true;
-                        down = true;
-                    }
-                }
-                state->handle(route, payload, state->keys[i]->depth, up,
-                        down);
-            }
-
-        }
-
         state->updateState();
     }
 

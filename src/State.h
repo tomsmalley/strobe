@@ -35,6 +35,7 @@ class State {
         JoystickState joystickState;
         LayerState layerState;
 
+        void scanKeys();
         void analogHandle(uint8_t payload, uint8_t depth);
         void dispatchPayload(uint8_t payload, uint8_t operation);
         void schedule(uint8_t payload, uint8_t operation, uint16_t time);

@@ -89,8 +89,46 @@ void State::schedule(uint8_t payload, uint8_t operation, uint16_t time) {
     }
 }
 
+void State::scanKeys() {
+    for (int i = 0; i < NUM_KEYS; i++) {
+        uint8_t route = 0;
+        uint8_t payload = 0;
+        // Get the key action based on active layers
+        for (int l = Persist::getLayerCount() - 1; l >= 0; l--) {
+            if (layerState.isActive(l)) {
+                route = Persist::getRoute(i, l);
+                payload = Persist::getPayload(i, l);
+                break;
+            }
+        }
+        if (payload != 0 && (i == 0 || i == 1)) {
+            // Hysteresis for determining if key is pressed
+            bool up = false, down = false;
+            // If key was pressed last iteration
+            if (keys[i]->pressed) {
+                // and it has dropped below threshold, set to not pressed
+                if (keys[i]->depth < Persist::getMinThreshold()) {
+                    keys[i]->pressed = false;
+                    Serial.println("Release event");
+                    up = true;
+                }
+            // or if it wasn't pressed
+            } else {
+                // and it has risen above threshold, set to pressed
+                if (keys[i]->depth > Persist::getMaxThreshold()) {
+                    keys[i]->pressed = true;
+                    Serial.println("Press event");
+                    down = true;
+                }
+            }
+            handle(route, payload, keys[i]->depth, up, down);
+        }
+    }
+}
+
+
 void State::updateState() {
-    // march time, do using user setting TODO
+    scanKeys();
     uint16_t timeStep = sinceLastUpdate;
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
         if (schedulePayload[i] != 0) {
