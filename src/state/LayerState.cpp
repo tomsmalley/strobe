@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <WProgram.h>
-#include "Actions.h"
 
 bool LayerState::isActive(uint8_t layer) {
     if (layer > MAX_LAYERS) return 0;
@@ -21,19 +20,19 @@ void LayerState::toggleLayer(uint8_t layer) {
     layers ^= 1 << layer;
 }
 
-void LayerState::update(uint8_t layer, uint8_t operation) {
+void LayerState::update(uint8_t layer, Operation operation) {
     if (layer > MAX_LAYERS) return; // Do nothing if invalid
     if (layer == 0) {
         layers = 1; // Reset layers
     } else {
         switch(operation) {
-            case SET:
+            case Operation::SET:
                 setLayer(layer);
                 break;
-            case UNSET:
+            case Operation::UNSET:
                 unsetLayer(layer);
                 break;
-            case TOGGLE:
+            case Operation::TOGGLE:
                 toggleLayer(layer);
                 break;
         }

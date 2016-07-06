@@ -11,30 +11,30 @@ State::State() {
     }
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
         schedulePayload[i] = 0;
-        scheduleOperation[i] = 0;
+        scheduleOperation[i] = Operation::SET;
         scheduleTime[i] = 0;
     }
 }
 
-void State::handle(uint8_t route, uint8_t payload, uint8_t depth = 0,
+void State::handle(Route route, uint8_t payload, uint8_t depth = 0,
         bool up = false, bool down = false) {
     switch (route) {
-        case ROUTE_ANALOG:
+        case Route::ANALOG:
             analogHandle(payload, depth);
             break;
-        case ROUTE_MOMENTARY:
+        case Route::MOMENTARY:
             if (down) {
-                schedule(payload, SET, 0);
+                schedule(payload, Operation::SET, 0);
             } else if (up) {
-                schedule(payload, UNSET, 0);
+                schedule(payload, Operation::UNSET, 0);
             }
             break;
-        case ROUTE_TOGGLE:
+        case Route::TOGGLE:
             if (down) {
-                schedule(payload, TOGGLE, 0);
+                schedule(payload, Operation::TOGGLE, 0);
             }
             break;
-        case ROUTE_SPECIAL:
+        case Route::SPECIAL:
             specialHandle(payload, depth);
             break;
     }
@@ -48,17 +48,11 @@ void State::analogHandle(uint8_t payload, uint8_t depth) {
     }
 }
 
-void State::schedule(uint8_t payload, uint8_t operation, uint16_t time) {
-    Serial.print("Scheduling: ");
-    Serial.print(payload);
-    Serial.print(" operation: ");
-    Serial.println(operation);
+void State::schedule(uint8_t payload, Operation operation, uint16_t time) {
     uint16_t longestTime = 0;
     uint8_t longestID = 0;
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
         if (schedulePayload[i] == 0) {
-            Serial.print("Scheduled at: ");
-            Serial.println(i);
             schedulePayload[i] = payload;
             scheduleOperation[i] = operation;
             scheduleTime[i] = time;
@@ -82,7 +76,7 @@ void State::schedule(uint8_t payload, uint8_t operation, uint16_t time) {
 
 void State::scanKeys() {
     for (int i = 0; i < NUM_KEYS; i++) {
-        uint8_t route = 0;
+        Route route;
         uint8_t payload = 0;
         // Get the key action based on active layers
         for (int l = Persist::getLayerCount() - 1; l >= 0; l--) {
@@ -100,7 +94,6 @@ void State::scanKeys() {
                 // and it has dropped below threshold, set to not pressed
                 if (keys[i]->depth < Persist::getMinThreshold()) {
                     keys[i]->pressed = false;
-                    Serial.println("Release event");
                     up = true;
                 }
             // or if it wasn't pressed
@@ -108,7 +101,6 @@ void State::scanKeys() {
                 // and it has risen above threshold, set to pressed
                 if (keys[i]->depth > Persist::getMaxThreshold()) {
                     keys[i]->pressed = true;
-                    Serial.println("Press event");
                     down = true;
                 }
             }
@@ -122,12 +114,7 @@ void State::updateState() {
     uint16_t timeStep = sinceLastUpdate;
     for (int i = 0; i < SCHEDULE_LENGTH; i++) {
         if (schedulePayload[i] != 0) {
-            Serial.print("Found payload: ");
-            Serial.print(schedulePayload[i]);
-            Serial.print(" at: ");
-            Serial.println(i);
             if (scheduleTime[i] <= timeStep) {
-                Serial.println("Dispatching...");
                 dispatchPayload(schedulePayload[i], scheduleOperation[i]);
                 schedulePayload[i] = 0;
             } else {
@@ -148,7 +135,7 @@ void State::specialHandle(uint8_t address, uint8_t depth) {
     // read the address and get the actions
 }
 
-void State::dispatchPayload(uint8_t payload, uint8_t operation) {
+void State::dispatchPayload(uint8_t payload, Operation operation) {
     if ((payload <= 0xA4) || (payload >= 0xE0 && payload <= 0xE7)) {
         keyboardState.update(payload, operation);
     } else if (payload >= 0xD0 && payload <= 0xDF) { // Toggle layer

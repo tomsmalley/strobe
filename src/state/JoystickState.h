@@ -1,12 +1,14 @@
 #ifndef JOYSTICK_STATE_H
 #define JOYSTICK_STATE_H
 
-#include "BiState.h"
+#include <cstdint>
 
-class JoystickState: public BiState {
+enum class Operation : uint8_t;
+
+class JoystickState {
 
     public:
-        virtual void update(uint8_t payload, uint8_t operation) {}
+        void update(uint8_t payload, Operation operation) {}
         void updateAnalog(uint8_t payload, uint8_t depth) {}
         void resetAnalog();
         void send();

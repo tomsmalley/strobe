@@ -4,6 +4,8 @@
 
 #include <EEPROM.h>
 
+#include "Actions.h" // For Route enum
+
 // Memory locations
 #define MEM_USER_SETTINGS   0x000
 #define MEM_KEY_MATRIX      0x080
@@ -165,20 +167,22 @@ uint8_t Persist::routeShift(uint8_t keyID) {
     return (keyID % (8/ROUTE_BITS)) * ROUTE_BITS;
 }
 
-uint8_t Persist::getRoute(uint8_t keyID, uint8_t layer) {
+Route Persist::getRoute(uint8_t keyID, uint8_t layer) {
     uint16_t address = MEM_KEY_ADDRESS + getLayerCount() * NUM_KEYS + routeOffset(keyID);
     // Bit shift to lowest two bits and mask
-    return (EEPROM.read(address) >> (6 - routeShift(keyID))) & 0b11;
+    uint8_t r = (EEPROM.read(address) >> (6 - routeShift(keyID))) & 0b11;
+    return static_cast<Route>(r);
 }
 
-void Persist::setRoute(uint8_t keyID, uint8_t layer, uint8_t route) {
+void Persist::setRoute(uint8_t keyID, uint8_t layer, Route route) {
     uint16_t address = MEM_KEY_ADDRESS + getLayerCount() * NUM_KEYS + routeOffset(keyID);
+    uint8_t r = static_cast<uint8_t>(route);
     // Number of bits to shift by
     uint8_t shift = 6 - routeShift(keyID);
     // Clear bits of interest in the byte block
     uint8_t old = EEPROM.read(address) & ~((0b11) << shift);
     // Mask and shift the route into position
-    uint8_t set = ((route & 0b11) << shift);
+    uint8_t set = ((r & 0b11) << shift);
     // Set the new byte value
     EEPROM.update(address, old | set);
 }

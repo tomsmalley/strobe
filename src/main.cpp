@@ -6,6 +6,8 @@
 #include "State.h"
 #include "EscapeCodes.h"
 
+#include "Actions.h" // TODO remove
+
 #include "MainMenu.h"
 
 MainMenu* menu;
@@ -48,19 +50,19 @@ void setup() {
     Persist::setUserID(2, 1, 1);
 
     // button 0
-    Persist::setRoute(0, 0, 1);
+    Persist::setRoute(0, 0, Route::MOMENTARY);
     Persist::setPayload(0, 0, 0x04);
-    Persist::setRoute(0, 1, 1);
+    Persist::setRoute(0, 1, Route::MOMENTARY);
     Persist::setPayload(0, 1, 0x05);
-    Persist::setRoute(0, 2, 1);
+    Persist::setRoute(0, 2, Route::MOMENTARY);
     Persist::setPayload(0, 2, 0x06);
 
     // button 1
-    Persist::setRoute(1, 0, 2);
+    Persist::setRoute(1, 0, Route::TOGGLE);
     Persist::setPayload(1, 0, 0xD1); // toggle L1
-    Persist::setRoute(1, 1, 2);
+    Persist::setRoute(1, 1, Route::TOGGLE);
     Persist::setPayload(1, 1, 0xD2); // toggle L2
-    Persist::setRoute(1, 2, 2);
+    Persist::setRoute(1, 2, Route::TOGGLE);
     Persist::setPayload(1, 2, 0xD0); // reset layer
 
 }

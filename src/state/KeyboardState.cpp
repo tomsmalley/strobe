@@ -4,7 +4,6 @@
 #include <WProgram.h>
 #include "usb_dev.h"
 #include "core_pins.h"
-#include "Actions.h"
 #include "USBTimeout.h"
 
 void KeyboardState::setSelector(uint8_t keyCode) {
@@ -71,28 +70,28 @@ void KeyboardState::initState() {
     }
 }
 
-void KeyboardState::update(uint8_t keyCode, uint8_t operation) {
+void KeyboardState::update(uint8_t keyCode, Operation operation) {
     if (keyCode <= 0xA4) {
         switch(operation) {
-            case SET:
+            case Operation::SET:
                 setSelector(keyCode);
                 break;
-            case UNSET:
+            case Operation::UNSET:
                 unsetSelector(keyCode);
                 break;
-            case TOGGLE:
+            case Operation::TOGGLE:
                 toggleSelector(keyCode);
                 break;
         }
     } else if (keyCode >= 0xE0 && keyCode <= 0xE7) {
         switch(operation) {
-            case SET:
+            case Operation::SET:
                 setModifier(keyCode);
                 break;
-            case UNSET:
+            case Operation::UNSET:
                 unsetModifier(keyCode);
                 break;
-            case TOGGLE:
+            case Operation::TOGGLE:
                 toggleModifier(keyCode);
                 break;
         }

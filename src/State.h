@@ -10,11 +10,11 @@
 #include "state/JoystickState.h"
 #include "state/LayerState.h"
 
-#include "Actions.h"
-
 #define SCHEDULE_LENGTH 128
 
 class Key;
+enum class Operation : uint8_t;
+enum class Route : uint8_t;
 
 class State {
 
@@ -22,13 +22,13 @@ class State {
         State();
         static const int NUM_KEYS = 128;
         Key* keys[NUM_KEYS];
-        void handle(uint8_t route, uint8_t payload, uint8_t depth, bool up, bool down);
+        void handle(Route route, uint8_t payload, uint8_t depth, bool up, bool down);
         void updateState();
 
     private:
         uint8_t schedulePayload[SCHEDULE_LENGTH];
         uint16_t scheduleTime[SCHEDULE_LENGTH];
-        uint8_t scheduleOperation[SCHEDULE_LENGTH];
+        Operation scheduleOperation[SCHEDULE_LENGTH];
 
         elapsedMillis sinceLastUpdate;
 
@@ -39,8 +39,8 @@ class State {
 
         void scanKeys();
         void analogHandle(uint8_t payload, uint8_t depth);
-        void dispatchPayload(uint8_t payload, uint8_t operation);
-        void schedule(uint8_t payload, uint8_t operation, uint16_t time);
+        void dispatchPayload(uint8_t payload, Operation operation);
+        void schedule(uint8_t payload, Operation operation, uint16_t time);
         void specialHandle(uint8_t address, uint8_t depth);
 
 };

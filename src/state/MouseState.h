@@ -1,12 +1,14 @@
 #ifndef MOUSE_STATE_H
 #define MOUSE_STATE_H
 
-#include "BiState.h"
+#include <cstdint>
 
-class MouseState: public BiState {
+enum class Operation : uint8_t;
+
+class MouseState {
 
     public:
-        virtual void update(uint8_t payload, uint8_t operation);
+        virtual void update(uint8_t payload, Operation operation);
         void updateAnalog(uint8_t payload, uint8_t depth);
         void send();
         void resetAnalog();

@@ -67,7 +67,7 @@ void MouseState::updateAnalog(uint8_t payload, uint8_t depth) {
     // wheel TODO
 }
 
-void MouseState::update(uint8_t payload, uint8_t operation) {
+void MouseState::update(uint8_t payload, Operation operation) {
 
 }
 

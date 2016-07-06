@@ -1,12 +1,13 @@
 #ifndef LAYER_STATE_H
 #define LAYER_STATE_H
 
-#include "BiState.h"
+#include <cstdint>
+#include "Actions.h"
 
 class LayerState {
 
     public:
-        void update(uint8_t payload, uint8_t operation);
+        void update(uint8_t payload, Operation operation);
         bool isActive(uint8_t layer);
 
     private:

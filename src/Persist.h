@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+enum class Route : uint8_t;
 
 /**
  * This class defines how EEPROM is allocated and provides accessor functions.
@@ -49,8 +50,8 @@ class Persist {
         /**
          * Get/set action for a key on a given layer.
          */
-        static uint8_t getRoute(uint8_t keyID, uint8_t layer);
-        static void setRoute(uint8_t keyID, uint8_t layer, uint8_t route);
+        static Route getRoute(uint8_t keyID, uint8_t layer);
+        static void setRoute(uint8_t keyID, uint8_t layer, Route route);
         static uint8_t getPayload(uint8_t keyID, uint8_t layer);
         static void setPayload(uint8_t keyID, uint8_t layer, uint8_t payload);
 

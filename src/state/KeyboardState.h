@@ -1,12 +1,13 @@
 #ifndef KEYBOARD_STATE_H
 #define KEYBOARD_STATE_H
 
-#include "BiState.h"
+#include <cstdint>
+#include "Actions.h"
 
-class KeyboardState: public BiState {
+class KeyboardState {
 
     public:
-        virtual void update(uint8_t payload, uint8_t operation);
+        void update(uint8_t payload, Operation operation);
         void initState();
         void send();
 
